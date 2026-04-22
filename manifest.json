@@ -1,11 +1,12 @@
 {
-  "name": "Task Manager",
-  "short_name": "TaskManager",
-  "description": "it helps owner to give and manage tasks to workers",
-  "start_url": "/index.html",
+  "name": "OLUXY Task Manager",
+  "short_name": "Oluxy",
+  "description": "Watch store task manager — assign and track daily tasks",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#852",
-  "theme_color": "#555",
+  "background_color": "#060809",
+  "theme_color": "#060809",
   "orientation": "any",
   "icons": [
     {

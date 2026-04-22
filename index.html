@@ -394,7 +394,7 @@ if ('serviceWorker' in navigator) {
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    _swReg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    _swReg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
 
     // Ask the currently running SW for its version
     await navigator.serviceWorker.ready;
@@ -567,7 +567,7 @@ async function sendPushNotif(title, body, tag = 'oluxy') {
     if (_swReg && ctrl) {
       ctrl.postMessage({ type: 'LOCAL_NOTIF', title, body, tag });
     } else {
-      new Notification(title, { body, icon: '/icon-192.png', tag });
+      new Notification(title, { body, icon: './icon-192.png', tag });
     }
   } catch(e) {
     try { new Notification(title, { body, tag }); } catch(_) {}

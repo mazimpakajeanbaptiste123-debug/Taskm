@@ -17,11 +17,11 @@ const IDB_NAME    = 'oluxy_v6';
 const IDB_STORE   = 'kv';
 
 const CORE_FILES = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // ── INSTALL ──────────────────────────────────────────────────────
@@ -59,7 +59,11 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  const isHTML = url.pathname === '/' || url.pathname.endsWith('.html');
+  const scope = self.registration.scope;
+  const scopePath = new URL(scope).pathname;
+  const isHTML = url.pathname === scopePath ||
+                 url.pathname === scopePath.replace(/\/$/, '') ||
+                 url.pathname.endsWith('.html');
   if (isHTML) {
     event.respondWith(
       fetch(event.request)
@@ -210,14 +214,16 @@ async function checkAndFirePendingNotifs() {
 
 // Show a notification from the SW background (works when app is closed)
 function showBgNotification(title, body, tag) {
+  const scope = self.registration.scope; // e.g. https://user.github.io/oluxy-app/
+  const iconBase = scope.replace(/\/$/, ''); // strip trailing slash
   return self.registration.showNotification(title, {
     body,
-    icon:     '/icon-192.png',
-    badge:    '/icon-192.png',
+    icon:     `${iconBase}/icon-192.png`,
+    badge:    `${iconBase}/icon-192.png`,
     tag,
     renotify: true,
     vibrate:  [200, 100, 200],
-    data:     { url: self.location.origin }
+    data:     { url: scope }
   });
 }
 
@@ -324,18 +330,20 @@ self.addEventListener('sync', event => {
 //    If the push has notification data, show it directly.
 //    If the push has no data (just a wake-up ping), run the full check.
 self.addEventListener('push', event => {
+  const scope = self.registration.scope;
+  const iconBase = scope.replace(/\/$/, '');
   if (event.data) {
     try {
       const d = event.data.json();
       event.waitUntil(
         self.registration.showNotification(d.title || 'Oluxy', {
           body:     d.body     || '',
-          icon:     d.icon     || '/icon-192.png',
-          badge:                  '/icon-192.png',
+          icon:     d.icon     || `${iconBase}/icon-192.png`,
+          badge:                  `${iconBase}/icon-192.png`,
           tag:      d.tag      || 'oluxy-push',
           renotify: true,
           vibrate:  [200, 100, 200],
-          data:     { url: self.location.origin }
+          data:     { url: scope }
         })
       );
       return;
@@ -365,15 +373,17 @@ self.addEventListener('message', event => {
   // Page sends a notification through the SW so it shows even when the
   // page goes into background immediately after (e.g. user locks phone)
   if (data.type === 'LOCAL_NOTIF') {
+    const scope = self.registration.scope;
+    const iconBase = scope.replace(/\/$/, '');
     event.waitUntil(
       self.registration.showNotification(data.title, {
         body:     data.body,
-        icon:     '/icon-192.png',
-        badge:    '/icon-192.png',
+        icon:     `${iconBase}/icon-192.png`,
+        badge:    `${iconBase}/icon-192.png`,
         tag:      data.tag || 'oluxy-local',
         renotify: true,
         vibrate:  [200, 100, 200],
-        data:     { url: self.location.origin }
+        data:     { url: scope }
       })
     );
     return;
@@ -391,13 +401,14 @@ self.addEventListener('message', event => {
 // ── NOTIFICATION CLICK ────────────────────────────────────────────
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  const targetUrl = event.notification.data?.url || self.registration.scope;
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
       // Focus an existing tab if there is one
       const existing = cs.find(c => c.url && c.focus);
       if (existing) return existing.focus();
-      // Otherwise open a new tab
-      return clients.openWindow(event.notification.data?.url || '/');
+      // Otherwise open a new tab pointed at the app
+      return clients.openWindow(targetUrl);
     })
   );
 });

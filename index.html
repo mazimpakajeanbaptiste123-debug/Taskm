@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Task Manager">
+<meta name="theme-color" content="#060809">
+<title>OLUXY Task Manager</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#00C264;--g-l:#00E874;--g-d:#007A3D;--g-dim:#00C26415;--g-dim2:rgba(0,194,100,0.08);
+  --black:#060809;--card:#0D1210;--card2:#111A14;--border:#162018;--border2:#1D2B20;
+  --text:#F4FBF6;--muted:#5A7A64;--muted2:#2D4035;
+  --red:#E05252;--orange:#E8943A;--gold:#C9A84C;--blue:#7A9BC9;--purple:#9B7AC9;
+}
+body.light{
+  --black:#f0f4f2;--card:#ffffff;--card2:#f7faf8;--border:#d0ddd5;--border2:#c4d6cb;
+  --text:#0d1f15;--muted:#5a7a64;--muted2:#8aab96;
+}
+body.light .topbar{background:rgba(240,244,242,0.95)!important;}
+body.light #page-setup,body.light #page-login{background:radial-gradient(ellipse at 50% 0%,#c8e8d4 0%,#e8f0eb 60%)!important;}
+body.light .f-select option{background:#fff;color:#0d1f15;}
+body.light .logo-icon{background:linear-gradient(145deg,#c5e8d5,#d5f0e0)!important;}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s;}
+button,input,textarea,select{font-family:'Outfit',sans-serif;}
+
+/* ── Safe area / notch handling ── */
+:root{
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --topbar-h:calc(52px + var(--sat));
+}
+
+.topbar{
+  padding-top:max(12px, var(--sat));
+  padding-bottom:12px;
+  padding-left:max(16px, var(--sal));
+  padding-right:max(16px, var(--sar));
+}
+.content{
+  padding-bottom:max(16px, var(--sab));
+}
+#page-setup,#page-login{
+  padding-top:max(24px, var(--sat));
+  padding-bottom:max(24px, var(--sab));
+  padding-left:max(16px, var(--sal));
+  padding-right:max(16px, var(--sar));
+}
+
+.page{display:none;min-height:100dvh;}
+.page.active{display:flex;}
+
+#page-setup,#page-login{align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 0%,#051a0c 0%,#060809 60%);}
+.box{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border2);border-radius:24px;padding:36px 28px;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,194,100,0.06),0 30px 80px rgba(0,0,0,0.6);}
+.box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
+.logo{text-align:center;margin-bottom:28px;}
+.logo-icon{width:64px;height:64px;border-radius:50%;border:1.5px solid var(--g);background:linear-gradient(145deg,#0a1f12,#0d2616);display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px;box-shadow:0 0 24px rgba(0,194,100,0.15);}
+.logo h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;letter-spacing:5px;color:var(--text);text-transform:uppercase;}
+.logo p{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:5px;}
+.setup-note{background:rgba(0,194,100,.06);border:1px solid rgba(0,194,100,.15);border-radius:12px;padding:13px 15px;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+.setup-note strong{color:var(--g);}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.field label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.f-input,.f-select{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:13px 15px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+.f-input:focus,.f-select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,194,100,0.08);}
+.f-input::placeholder{color:var(--muted2);}
+.f-select option{background:#0D1210;color:var(--text);}
+.btn-gold{width:100%;background:var(--g);color:#000;border:none;border-radius:14px;padding:15px;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:6px;box-shadow:0 4px 20px rgba(0,194,100,0.25);}
+.btn-gold:hover,.btn-gold:active{background:var(--g-l);transform:translateY(-1px);}
+.btn-outline{width:100%;background:transparent;border:1px solid var(--border2);border-radius:14px;padding:13px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;margin-top:10px;}
+.btn-outline:hover{border-color:var(--g);color:var(--g);}
+.err-box{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:12px;display:none;}
+.user-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.user-btn{background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:13px;cursor:pointer;transition:all .25s;text-align:left;color:var(--text);width:100%;}
+.user-btn:hover,.user-btn.active{border-color:var(--g);background:var(--g-dim2);box-shadow:0 0 20px rgba(0,194,100,0.08);}
+.av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:600;flex-shrink:0;}
+.av-o{background:#0a1a0d;border:1.5px solid var(--g);color:var(--g);}
+.av-k{background:#0d141a;border:1.5px solid #7A9BC9;color:#7A9BC9;}
+.av-n{background:#0a1a0d;border:1.5px solid var(--g-l);color:var(--g-l);}
+.av-x{background:#140d1a;border:1.5px solid var(--purple);color:var(--purple);}
+.uname{font-size:15px;font-weight:500;}
+.urole{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.login-hint{font-size:11px;color:var(--muted2);text-align:center;margin-top:12px;}
+
+#page-app{flex-direction:column;}
+.topbar{
+  background:rgba(6,8,9,0.97);
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;gap:8px;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  /* height controlled by padding-top in safe-area block above */
+}
+body.light .topbar{background:rgba(240,244,242,0.97)!important;}
+.brand{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;min-width:0;flex-shrink:1;}
+.brand h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;letter-spacing:3px;color:var(--text);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-r{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:0;}
+.sync-pill{display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:20px;font-size:10px;letter-spacing:1px;background:var(--card2);border:1px solid var(--border2);}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.s-live .sdot{background:var(--g);box-shadow:0 0 6px var(--g);}
+.s-off .sdot{background:var(--orange);}
+.s-none .sdot{background:var(--muted);}
+.s-live{color:var(--g);}
+.s-off{color:var(--orange);}
+.s-none{color:var(--muted);}
+.tb-user{display:flex;align-items:center;gap:6px;}
+.tb-name{font-size:12px;font-weight:500;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notif-btn{position:relative;background:transparent;border:1px solid var(--border2);border-radius:20px;padding:6px 9px;color:var(--muted);font-size:14px;cursor:pointer;transition:all .2s;display:none;}
+.notif-btn:hover{border-color:var(--g);color:var(--g);}
+.notif-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:20px;padding:2px 5px;min-width:16px;text-align:center;display:none;}
+.theme-btn{background:transparent;border:1px solid var(--border2);border-radius:20px;padding:6px 9px;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;}
+.theme-btn:hover{border-color:var(--g);color:var(--g);}
+.signout{background:transparent;border:1px solid var(--border2);border-radius:20px;padding:6px 11px;color:var(--muted);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.signout:hover{border-color:var(--red);color:var(--red);}
+.content{flex:1;padding:16px;max-width:680px;margin:0 auto;width:100%;}
+
+.tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--card);border-radius:16px;padding:4px;border:1px solid var(--border2);}
+.tab{flex:1;padding:10px 6px;text-align:center;border-radius:12px;cursor:pointer;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:all .2s;border:none;background:transparent;font-weight:500;}
+.tab.active{background:var(--g);color:#000;font-weight:700;box-shadow:0 2px 12px rgba(0,194,100,0.3);}
+
+.pstrip{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px 20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.pstrip::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
+.prow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.pnum{font-family:'Playfair Display',serif;font-size:40px;font-weight:400;color:var(--g);line-height:1;}
+.plbl{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.pbar-w{flex:1;min-width:120px;}
+.pbar-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;}
+.pbar-top span{color:var(--g);font-weight:600;}
+.ptrack{height:6px;background:var(--border2);border-radius:8px;overflow:hidden;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--g-d),var(--g));border-radius:8px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* priority */
+.pri-badge-high{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.pri-badge-med{background:rgba(232,148,58,.1);color:var(--orange);border:1px solid rgba(232,148,58,.2);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.pri-badge-low{background:var(--g-dim);color:var(--muted);border:1px solid rgba(90,122,100,.2);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+
+/* deadline */
+.dl-badge{font-size:10px;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
+.dl-ok{background:rgba(0,194,100,.08);color:var(--g);border:1px solid rgba(0,194,100,.15);}
+.dl-warn{background:rgba(232,148,58,.1);color:var(--orange);border:1px solid rgba(232,148,58,.2);}
+.dl-over{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2);}
+
+/* task cards */
+.tcard{background:var(--card);border:1px solid var(--border2);border-radius:18px;margin-bottom:10px;overflow:hidden;transition:all .2s;}
+.tcard.done{border-color:rgba(0,194,100,.2);}
+.tcard.pri-h{border-left:3px solid var(--red);}
+.tcard.pri-m{border-left:3px solid var(--orange);}
+.thead{padding:16px;display:flex;align-items:flex-start;gap:12px;}
+.tchk{width:26px;height:26px;min-width:26px;border-radius:8px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;margin-top:1px;cursor:pointer;background:transparent;font-size:13px;color:#fff;transition:all .25s;flex-shrink:0;}
+.tcard.done .tchk{background:var(--g);border-color:var(--g);box-shadow:0 0 12px rgba(0,194,100,0.3);}
+.tbody{flex:1;cursor:pointer;min-width:0;}
+.tname{font-size:14px;font-weight:400;line-height:1.4;}
+.tcard.done .tname{text-decoration:line-through;color:var(--muted);}
+.ttag{display:inline-block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:20px;background:var(--g-dim);color:var(--g);border:1px solid rgba(0,194,100,0.15);}
+.tmeta{font-size:11px;color:var(--g);margin-left:7px;}
+.tpend{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:20px;background:rgba(232,148,58,.1);color:var(--orange);margin-left:7px;}
+.texpand{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 3px;transition:transform .25s;flex-shrink:0;}
+.tcard.open .texpand{transform:rotate(180deg);color:var(--g);}
+
+.tinstr{font-size:12px;color:var(--muted);background:var(--card2);border-radius:8px;padding:9px 12px;margin:0 16px 12px;border-left:2px solid var(--g-d);line-height:1.6;display:none;}
+.tcard.open .tinstr{display:block;}
+
+.treport{border-top:1px solid var(--border2);padding:14px 16px 16px;display:none;}
+.tcard.open .treport{display:block;}
+.rlbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.rtarea{width:100%;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;color:var(--text);font-size:14px;resize:vertical;min-height:80px;outline:none;transition:border-color .2s,box-shadow .2s;line-height:1.6;}
+.rtarea:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,194,100,0.08);}
+.rbtns{display:flex;gap:8px;margin-top:10px;}
+.btn-save{background:var(--g);color:#000;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;flex:1;box-shadow:0 2px 12px rgba(0,194,100,0.2);}
+.btn-save:hover{background:var(--g-l);}
+.btn-close{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:10px;padding:10px 16px;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-close:hover{color:var(--text);border-color:var(--muted);}
+.rsaved{font-size:11px;color:var(--g);margin-top:7px;display:none;}
+
+/* comments */
+.comments-sec{border-top:1px solid var(--border2);padding:12px 16px 14px;display:none;}
+.tcard.open .comments-sec{display:block;}
+.cmt-item{background:var(--card2);border-radius:10px;padding:9px 12px;margin-bottom:7px;font-size:12px;line-height:1.6;}
+.cmt-who{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--g);font-weight:600;margin-bottom:3px;}
+.cmt-who.owner-cmt{color:var(--gold);}
+.cmt-ts{font-size:9px;color:var(--muted);margin-left:5px;font-weight:400;letter-spacing:0;}
+.cmt-row{display:flex;gap:8px;margin-top:8px;}
+.cmt-input{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;}
+.cmt-input:focus{border-color:var(--g);}
+.btn-cmt{background:var(--g);color:#000;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+/* undo */
+.undo-bar{position:fixed;bottom:68px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--card2);border:1px solid var(--orange);border-radius:30px;padding:10px 20px;font-size:13px;color:var(--orange);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9998;display:flex;align-items:center;gap:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+.undo-bar.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all;}
+.undo-bar button{background:var(--orange);color:#000;border:none;border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600;cursor:pointer;}
+
+/* owner */
+.ogrid{display:grid;gap:12px;margin-bottom:20px;}
+@media(max-width:480px){.ogrid{gap:8px;}}
+.mcard{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px 14px;position:relative;overflow:hidden;}
+.mcard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);}
+.mval{font-family:'Playfair Display',serif;font-size:32px;font-weight:400;color:var(--g);line-height:1;}
+.mlbl{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:6px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g);border-bottom:1px solid var(--border2);padding-bottom:10px;margin-bottom:13px;}
+.emp-sec{margin-bottom:24px;}
+.rrow{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:9px;}
+.rrow-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.rtask-name{font-size:13px;font-weight:500;}
+.rst{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap;}
+.rst-done{background:rgba(0,194,100,.1);color:var(--g);border:1px solid rgba(0,194,100,0.2);}
+.rst-pend{background:rgba(232,148,58,.08);color:var(--orange);border:1px solid rgba(232,148,58,0.2);}
+.rnote{margin-top:9px;padding:10px 13px;background:var(--card2);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.6;border-left:2px solid var(--g-d);font-style:italic;}
+.no-rep{font-size:12px;color:var(--muted2);font-style:italic;margin-top:5px;}
+
+/* task manager */
+.add-form{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px;margin-bottom:18px;}
+.form-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:13px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px;}
+@media(max-width:480px){.frow{grid-template-columns:1fr;}}
+.del-btn{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:6px 12px;color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;}
+.del-btn:hover{border-color:var(--red);color:var(--red);}
+.abadge{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-left:6px;}
+.ab-both{background:var(--g-dim);color:var(--g);border:1px solid rgba(0,194,100,0.15);}
+.ab-k{background:rgba(122,155,201,.1);color:var(--blue);}
+.ab-n{background:rgba(0,194,100,.1);color:var(--g-l);}
+.ab-x{background:rgba(155,122,201,.1);color:var(--purple);}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;letter-spacing:1px;}
+
+/* settings */
+.scard{background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:18px;margin-bottom:16px;}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border2);gap:10px;flex-wrap:wrap;}
+.srow:last-child{border-bottom:none;}
+.sinfo{display:flex;align-items:center;gap:10px;}
+.sinput{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;width:120px;transition:border-color .2s;}
+.sinput:focus{border-color:var(--g);}
+.btn-sm{background:var(--g);color:#000;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-sm:hover{background:var(--g-l);}
+.dbadge{font-size:12px;color:var(--muted);margin-bottom:16px;letter-spacing:.5px;}
+.wh2{font-family:'Playfair Display',serif;font-size:24px;font-weight:500;}
+
+/* search */
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;margin-bottom:12px;}
+.search-bar input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:13px;}
+.search-bar input::placeholder{color:var(--muted2);}
+.search-icon{color:var(--muted);font-size:14px;}
+.search-clr{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0;line-height:1;}
+
+/* preset */
+.carry-banner{background:linear-gradient(135deg,rgba(0,194,100,0.08),rgba(0,194,100,0.04));border:1px solid rgba(0,194,100,0.25);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.preset-grid{display:flex;flex-direction:column;gap:8px;}
+.preset-chip{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:10px;}
+.preset-chip:active{transform:scale(0.98);}
+.preset-chip.preset-active{background:rgba(0,194,100,0.08);border-color:rgba(0,194,100,0.35);}
+.preset-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--g-dim);color:var(--g);border:1px solid rgba(0,194,100,0.15);flex-shrink:0;white-space:nowrap;}
+.preset-name{font-size:13px;color:var(--text);flex:1;line-height:1.3;}
+.preset-chip.preset-active .preset-name{color:var(--g);}
+.preset-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.preset-check{font-size:14px;color:var(--g);flex-shrink:0;font-weight:700;}
+
+/* weekly chart */
+.week-wrap{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:16px;margin-bottom:20px;}
+.week-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.week-bar{display:flex;align-items:flex-end;gap:6px;height:70px;}
+.wday{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.wday-pct{font-size:9px;color:var(--muted);}
+.wday-fill{width:100%;border-radius:5px 5px 0 0;background:var(--g-d);transition:height .4s;min-height:2px;}
+.wday-fill.wtoday{background:var(--g);box-shadow:0 0 8px rgba(0,194,100,0.4);}
+.wday-name{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+.wday-name.wtoday{color:var(--g);font-weight:700;}
+
+/* notifications panel */
+.notif-panel{position:fixed;top:57px;right:0;width:min(340px,100vw);background:var(--card);border:1px solid var(--border2);border-left:none;border-top:none;border-radius:0 0 0 16px;z-index:200;transform:translateX(105%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-4px 4px 24px rgba(0,0,0,0.4);max-height:70vh;overflow-y:auto;}
+.notif-panel.open{transform:translateX(0);}
+.notif-hdr{padding:13px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);}
+.notif-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--g);}
+.notif-clr{background:transparent;border:none;color:var(--muted);font-size:11px;cursor:pointer;}
+.notif-clr:hover{color:var(--red);}
+.notif-item{padding:11px 16px;border-bottom:1px solid var(--border2);font-size:13px;line-height:1.5;}
+.notif-item:last-child{border-bottom:none;}
+.notif-time{font-size:10px;color:var(--muted);margin-top:3px;}
+.notif-empty{padding:24px;text-align:center;font-size:12px;color:var(--muted2);}
+
+/* confetti */
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:none;}
+
+/* celebration banner */
+.celeb-banner{text-align:center;padding:20px;background:rgba(0,194,100,0.08);border:1px solid rgba(0,194,100,0.2);border-radius:16px;margin-bottom:16px;}
+
+/* export btn */
+.export-btn{background:transparent;border:1px solid var(--border2);border-radius:10px;padding:7px 13px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.export-btn:hover{border-color:var(--g);color:var(--g);}
+
+
+
+/* brand modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px;width:100%;max-width:360px;}
+.modal-title{font-family:'Playfair Display',serif;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--g);margin-bottom:18px;}
+
+/* edit preset modal */
+.edit-preset-modal .modal-box{max-width:400px;}
+
+/* confirm tasks banner */
+.confirm-banner{background:linear-gradient(135deg,rgba(201,168,76,0.12),rgba(201,168,76,0.06));border:1px solid rgba(201,168,76,0.4);border-radius:16px;padding:16px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.confirm-banner-info{flex:1;}
+.confirm-banner-title{font-size:13px;font-weight:600;color:var(--gold);}
+.confirm-banner-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.btn-confirm{background:var(--gold);color:#000;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-confirm:hover{background:#e0bd5a;transform:translateY(-1px);}
+.tasks-pending-overlay{position:relative;}
+.tasks-pending-overlay::after{content:'Waiting for owner confirmation';position:absolute;inset:0;background:rgba(6,8,9,0.75);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;pointer-events:none;display:flex;}
+
+/* save login / remember me */
+.save-login-row{display:flex;align-items:center;gap:8px;margin:10px 0 6px;cursor:pointer;user-select:none;}
+.save-login-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--g);cursor:pointer;}
+.save-login-row span{font-size:12px;color:var(--muted);}
+.saved-creds-strip{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;transition:border-color .2s;}
+.saved-creds-strip:hover{border-color:var(--g);}
+.saved-creds-lbl{font-size:12px;color:var(--muted);}
+.saved-creds-name{font-size:13px;font-weight:600;color:var(--text);}
+.saved-creds-clr{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:6px;}
+.saved-creds-clr:hover{color:var(--red);}
+
+/* preset edit btn */
+.preset-edit-btn{background:none;border:1px solid var(--border2);border-radius:8px;padding:5px 9px;color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.preset-edit-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--card2);border:1px solid var(--g);border-radius:30px;padding:11px 24px;font-size:13px;color:var(--g);letter-spacing:1px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,194,100,0.15);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:400px){
+  .sync-pill span:not(.sdot){display:none;}
+  .sync-pill{padding:6px 7px;}
+  .brand h2{font-size:15px;letter-spacing:2px;}
+  .tb-name{display:none;}
+  .signout{padding:6px 9px;font-size:10px;}
+  .mval{font-size:26px;}
+  .mcard{padding:12px 10px;}
+  .ogrid{gap:6px;}
+  .tab{font-size:10px;padding:9px 4px;letter-spacing:0.5px;}
+}
+@media(max-width:360px){
+  .box{padding:28px 20px;}
+  .logo h1{font-size:24px;}
+  .brand h2{display:none;}
+  .theme-btn{display:none;}
+}
+</style>
+</head>
+<body>
+<script>
+// ══ SERVICE WORKER + AUTO-UPDATE ══
+let _swReg = null;
+let _swActiveVersion = null;   // version string reported by the currently active SW
+let _swWaitingVersion = null;  // version string of the new SW waiting to activate
+
+// ── Ask the active SW for its version number ──────────────────────
+function querySWVersion() {
+  const ctrl = navigator.serviceWorker.controller;
+  if (ctrl) ctrl.postMessage({ type: 'GET_VERSION' });
+}
+
+// ── Listen for messages coming back from the SW ───────────────────
+// Guard: some older browsers or private modes don't support serviceWorker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    const data = event.data || {};
+
+    // Active SW replies with its version
+    if (data.type === 'SW_VERSION') {
+      _swActiveVersion = data.version;
+      // Refresh the version badge in Settings if it's open
+      const badge = document.getElementById('app-version-badge');
+      if (badge) badge.textContent = `v${data.version}`;
+      return;
+    }
+
+    // SW just activated (after SKIP_WAITING) — update badge + toast
+    if (data.type === 'SW_ACTIVATED') {
+      _swActiveVersion = data.version;
+      const badge = document.getElementById('app-version-badge');
+      if (badge) badge.textContent = `v${data.version}`;
+      return;
+    }
+  });
+}
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    _swReg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+
+    // Ask the currently running SW for its version
+    await navigator.serviceWorker.ready;
+    querySWVersion();
+
+    // ── Register periodic background sync (Chrome Android / Edge) ──
+    // This wakes the SW every ~15 min even when the app is fully closed,
+    // so users receive notifications without ever opening the app.
+    if ('periodicSync' in _swReg) {
+      try {
+        // Permission check first (requires 'periodic-background-sync' permission)
+        const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+        if (status.state === 'granted') {
+          await _swReg.periodicSync.register('oluxy-notif-check', {
+            minInterval: 15 * 60 * 1000  // minimum 15 minutes
+          });
+          console.log('[App] Periodic background sync registered');
+        }
+      } catch (e) {
+        console.log('[App] Periodic sync not available:', e.message);
+      }
+    }
+
+    // ── SW already waiting on page load (deployed while tab was closed) ──
+    if (_swReg.waiting) {
+      _getWaitingVersion(_swReg.waiting).then(v => showUpdateBanner(_swActiveVersion, v));
+    }
+
+    // ── New SW downloaded while the app is open ───────────────────
+    _swReg.addEventListener('updatefound', () => {
+      const newSW = _swReg.installing;
+      if (!newSW) return;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          _getWaitingVersion(newSW).then(v => showUpdateBanner(_swActiveVersion, v));
+        }
+      });
+    });
+
+    // ── After SKIP_WAITING all tabs reload automatically ──────────
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+  } catch(e) {
+    console.warn('SW registration failed:', e);
+  }
+}
+
+// Ask a specific SW worker its APP_VERSION via GET_VERSION message.
+// Returns a Promise that resolves to a version string (or null on timeout).
+function _getWaitingVersion(swWorker) {
+  return new Promise(resolve => {
+    const mc = new MessageChannel();
+    const timer = setTimeout(() => resolve(null), 2000);
+    mc.port1.onmessage = e => {
+      clearTimeout(timer);
+      resolve(e.data?.version || null);
+    };
+    swWorker.postMessage({ type: 'GET_VERSION' }, [mc.port2]);
+  });
+}
+
+// ── Show the update popup ─────────────────────────────────────────
+// oldVer / newVer are version strings like "1.0.0" — may be null.
+function showUpdateBanner(oldVer, newVer) {
+  if (document.getElementById('update-banner')) return; // already showing
+
+  _swWaitingVersion = newVer;
+
+  const oldLabel = oldVer ? `v${oldVer}` : 'current';
+  const newLabel = newVer ? `v${newVer}` : 'new version';
+
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = [
+    'position:fixed', 'bottom:84px', 'left:50%',
+    'transform:translateX(-50%) translateY(12px)',
+    'background:#0D1210', 'border:1.5px solid #00C264',
+    'border-radius:18px', 'padding:16px 18px',
+    'z-index:99999', 'display:flex', 'align-items:flex-start',
+    'gap:13px', 'box-shadow:0 6px 32px rgba(0,194,100,0.28)',
+    'max-width:360px', 'width:calc(100% - 32px)',
+    'font-family:Outfit,sans-serif',
+    'opacity:0', 'transition:opacity .35s,transform .35s'
+  ].join(';');
+
+  banner.innerHTML = `
+    <div style="font-size:24px;margin-top:1px">🚀</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:#F4FBF6;letter-spacing:.3px">Update available</div>
+      <div style="font-size:11px;color:#5A7A64;margin-top:3px;line-height:1.5">
+        ${oldLabel} → <span style="color:#00C264;font-weight:600">${newLabel}</span>
+        &nbsp;·&nbsp;Tap to install
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+      <button id="update-now-btn" style="background:#00C264;color:#000;border:none;border-radius:10px;padding:9px 15px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.3px">Update Now</button>
+      <button id="update-later-btn" style="background:none;border:none;color:#5A7A64;font-size:20px;cursor:pointer;padding:0 3px;line-height:1" title="Remind me later">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    banner.style.opacity = '1';
+    banner.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  document.getElementById('update-now-btn').addEventListener('click', () => {
+    banner.remove();
+    applyUpdate();
+  });
+  document.getElementById('update-later-btn').addEventListener('click', () => {
+    banner.style.opacity = '0';
+    banner.style.transform = 'translateX(-50%) translateY(12px)';
+    setTimeout(() => banner.remove(), 350);
+  });
+}
+
+// ── Trigger the waiting SW to activate ───────────────────────────
+function applyUpdate() {
+  if (_swReg && _swReg.waiting) {
+    _swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    // controllerchange listener above reloads all tabs automatically
+  }
+}
+
+// ── Manual "Check for updates" (called from Settings) ────────────
+window.checkForUpdates = async function() {
+  const btn = document.getElementById('check-update-btn');
+  if (btn) { btn.textContent = 'Checking…'; btn.disabled = true; }
+  try {
+    if (!_swReg) throw new Error('No SW');
+    await _swReg.update();
+    // Small delay to let updatefound fire if there is a new version
+    await new Promise(r => setTimeout(r, 1500));
+    if (!_swReg.waiting) {
+      toast('✅ App is up to date!');
+      if (btn) { btn.textContent = 'Up to date ✓'; btn.disabled = false; }
+      // Re-render after 2s to restore button label
+      setTimeout(() => { if(CU) renderView(); }, 2000);
+    }
+    // If there IS a new SW waiting, the updatefound/statechange handler
+    // already called showUpdateBanner — no extra work needed here.
+  } catch(e) {
+    toast('Could not check for updates');
+    if (btn) { btn.textContent = 'Check for Updates'; btn.disabled = false; }
+  }
+};
+
+// ── Notification permission helper ─────────────────────────────
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+// ── Send a local push notification via SW ──────────────────────
+async function sendPushNotif(title, body, tag = 'oluxy') {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  try {
+    const ctrl = navigator.serviceWorker.controller;
+    if (_swReg && ctrl) {
+      ctrl.postMessage({ type: 'LOCAL_NOTIF', title, body, tag });
+    } else {
+      new Notification(title, { body, icon: '/icon-192.png', tag });
+    }
+  } catch(e) {
+    try { new Notification(title, { body, tag }); } catch(_) {}
+  }
+}
+
+// Check for SW updates whenever the page becomes visible
+// (covers: user switches back to tab after a deploy)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && _swReg) {
+    _swReg.update().catch(() => {});
+    querySWVersion();
+  }
+});
+
+window.addEventListener('load', () => { registerSW(); });
+</script>
+
+<canvas id="confetti-canvas"></canvas>
+
+<!-- SETUP -->
+<div class="page active" id="page-setup">
+  <div class="box">
+    <div class="logo">
+      <div class="logo-icon" id="setup-icon">⌚</div>
+      <h1 id="setup-name">Oluxy</h1>
+      <p>Firebase Setup</p>
+    </div>
+    <div class="setup-note"><strong>Optional — Connect Firebase for real-time sync.</strong><br>Go to <strong>console.firebase.google.com</strong> → Project Settings → Web App → copy config values. Also enable <strong>Firestore Database</strong> in test mode.</div>
+    <div class="err-box" id="cfg-err"></div>
+    <div class="field"><label>API Key</label><input class="f-input" id="cfg-apiKey" placeholder="AIzaSy..."></div>
+    <div class="field"><label>Auth Domain</label><input class="f-input" id="cfg-authDomain" placeholder="your-app.firebaseapp.com"></div>
+    <div class="field"><label>Project ID</label><input class="f-input" id="cfg-projectId" placeholder="your-project-id"></div>
+    <div class="field"><label>Storage Bucket</label><input class="f-input" id="cfg-storageBucket" placeholder="your-app.appspot.com"></div>
+    <div class="field"><label>Messaging Sender ID</label><input class="f-input" id="cfg-messagingSenderId" placeholder="123456789"></div>
+    <div class="field"><label>App ID</label><input class="f-input" id="cfg-appId" placeholder="1:123456:web:abc123"></div>
+    <button class="btn-gold" onclick="connectFirebase()">Connect Firebase & Launch</button>
+    <button class="btn-outline" onclick="skipToLogin()">▸ Skip — Use offline only</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="page-login">
+  <div class="box">
+    <div class="logo">
+      <div class="logo-icon" id="login-icon">⌚</div>
+      <h1 id="login-name">Oluxy</h1>
+      <p id="login-sub">Watches · Task Manager</p>
+    </div>
+    <div class="user-list" id="user-list">
+      <button class="user-btn" onclick="selectUser('owner')" data-u="owner">
+        <div class="av av-o" id="av-owner">O</div>
+        <div><div class="uname">Owner</div><div class="urole">Full Access</div></div>
+      </button>
+      <button class="user-btn" onclick="selectUser('kaliza')" data-u="kaliza">
+        <div class="av av-k">K</div>
+        <div><div class="uname" id="ln-kaliza">Kaliza</div><div class="urole">Store Associate</div></div>
+      </button>
+      <button class="user-btn" onclick="selectUser('kanyana')" data-u="kanyana">
+        <div class="av av-n">K</div>
+        <div><div class="uname" id="ln-kanyana">Kanyana</div><div class="urole">Store Associate</div></div>
+      </button>
+      <button class="user-btn" onclick="selectUser('worker3')" data-u="worker3" id="w3-btn" style="display:none">
+        <div class="av av-x">W</div>
+        <div><div class="uname" id="ln-worker3">Worker 3</div><div class="urole">Store Associate</div></div>
+      </button>
+    </div>
+    <div class="err-box" id="login-err">Wrong password. Try again.</div>
+    <div id="saved-creds-strip" style="display:none">
+      <div class="saved-creds-strip" onclick="useSavedCreds()">
+        <div>
+          <div class="saved-creds-lbl">Saved login</div>
+          <div class="saved-creds-name" id="saved-creds-name">—</div>
+        </div>
+        <button class="saved-creds-clr" onclick="event.stopPropagation();clearSavedCreds()" title="Remove saved login">✕ Forget</button>
+      </div>
+    </div>
+    <div class="field"><input class="f-input" type="password" id="pw-input" placeholder="Enter your password…" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <label class="save-login-row"><input type="checkbox" id="remember-me"><span>Remember my login on this device</span></label>
+    <button class="btn-gold" onclick="doLogin()">Sign In →</button>
+    <p class="login-hint">Select your name then enter your password</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="page" id="page-app">
+  <div class="topbar">
+    <div class="brand" onclick="openBrandModal()" title="Customize app">
+      <span id="tb-icon">⌚</span>
+      <h2 id="tb-name-brand">Oluxy</h2>
+    </div>
+    <div class="topbar-r">
+      <div class="sync-pill s-none" id="sync-pill"><div class="sdot"></div><span id="sync-txt">Offline only</span></div>
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">🔔<span class="notif-badge" id="notif-badge"></span></button>
+      <div class="tb-user">
+        <div class="av" id="tb-av" style="width:30px;height:30px;font-size:13px;"></div>
+        <div class="tb-name" id="tb-name"></div>
+      </div>
+      <button class="signout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-hdr">
+    <span class="notif-title">🔔 Notifications</span>
+    <button class="notif-clr" onclick="clearNotifs()">Clear all</button>
+  </div>
+  <div id="notif-list"></div>
+</div>
+
+<!-- BRAND MODAL -->
+<div class="modal-overlay" id="brand-modal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Customize App</div>
+    <div class="field"><label>App Name</label><input class="f-input" id="b-name" placeholder="e.g. OLUXY"></div>
+    <div class="field"><label>Icon (emoji)</label><input class="f-input" id="b-icon" placeholder="e.g. ⌚ 💎 🏪"></div>
+    <div class="field"><label>Tagline</label><input class="f-input" id="b-sub" placeholder="e.g. Watches · Task Manager"></div>
+    <button class="btn-gold" style="margin-top:8px" onclick="saveBrand()">Save</button>
+    <button class="btn-outline" onclick="closeBrandModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="undo-bar" id="undo-bar">↩ Task marked complete <button onclick="undoComplete()">Undo</button></div>
+<div class="toast" id="toast"></div>
+
+<!-- EDIT PRESET MODAL -->
+<div class="modal-overlay edit-preset-modal" id="edit-preset-modal">
+  <div class="modal-box">
+    <div class="modal-title">✏️ Edit Preset</div>
+    <div class="field"><label>Task Name</label><input class="f-input" id="ep-name" placeholder="Task name…"></div>
+    <div class="field"><label>Category</label><input class="f-input" id="ep-tag" placeholder="e.g. Store, Social…"></div>
+    <div class="field"><label>Priority</label>
+      <select class="f-select" id="ep-pri">
+        <option value="high">🔴 High</option>
+        <option value="med">🟡 Medium</option>
+        <option value="low">🟢 Low</option>
+      </select>
+    </div>
+    <div class="field"><label>Deadline</label><input class="f-input" id="ep-dl" type="time"></div>
+    <div class="field"><label>Instructions</label><input class="f-input" id="ep-desc" placeholder="Instructions (optional)"></div>
+    <input type="hidden" id="ep-id">
+    <button class="btn-gold" style="margin-top:8px" onclick="saveEditPreset()">Save Changes</button>
+    <button class="btn-outline" onclick="closeEditPresetModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- CONFIRM TASKS MODAL -->
+<div class="modal-overlay" id="confirm-tasks-modal">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-title">📤 Send Tasks to Workers</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Workers cannot see new tasks until you confirm. Review below and send when ready.</div>
+    <div id="confirm-task-list" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <button class="btn-gold" style="margin-top:0" onclick="confirmSendTasks()">✅ Confirm & Send to Workers</button>
+    <button class="btn-outline" onclick="closeConfirmModal()">Keep Editing</button>
+  </div>
+</div>
+
+
+<script>
+// ══ INDEXEDDB ══
+let _db=null;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('oluxy_v6',1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv');};r.onsuccess=e=>{_db=e.target.result;res();};r.onerror=e=>rej(e);});}
+const dbGet=(k)=>new Promise((r,j)=>{const tx=_db.transaction('kv','readonly');const q=tx.objectStore('kv').get(k);q.onsuccess=()=>r(q.result??null);q.onerror=j;});
+const dbSet=(k,v)=>new Promise((r,j)=>{const tx=_db.transaction('kv','readwrite');const q=tx.objectStore('kv').put(v,k);q.onsuccess=()=>r();q.onerror=j;});
+const dbDel=(k)=>new Promise((r,j)=>{const tx=_db.transaction('kv','readwrite');const q=tx.objectStore('kv').delete(k);q.onsuccess=()=>r();q.onerror=j;});
+
+// Shows an inline error in a named err-box element, falls back to toast if element missing
+function showErr(elId, msg){
+  const el=document.getElementById(elId);
+  if(el){el.textContent=msg;el.style.display='block';}
+  else{toast('⚠️ '+msg);}
+}
+
+// ══ BUILTIN PRESETS ══
+const BUILTIN=[
+  {id:'p1',name:'Display cleaning & organizing',tag:'Store',priority:'high',description:'Clean all display cases and reorganize by collection.'},
+  {id:'p2',name:'WhatsApp status & Instagram stories',tag:'Social',priority:'med',description:'Post daily content to WhatsApp status and IG stories.'},
+  {id:'p3',name:'Photo shoot & image editing in Canva',tag:'Content',priority:'med',description:'Shoot product photos and edit in Canva for social media.'},
+  {id:'p4',name:'Track stock & availability in app',tag:'Stock',priority:'high',description:'Update stock levels for all watch models in the inventory app.'},
+  {id:'p5',name:'Update WhatsApp & Instagram catalogs',tag:'Catalog',priority:'med',description:'Sync catalog with latest prices and stock status.'},
+  {id:'p6',name:'Shoot unboxing videos',tag:'Content',priority:'low',description:'Record unboxing content for new arrivals.'},
+  {id:'p7',name:'Order preparation',tag:'Orders',priority:'high',description:'Prepare and package all pending customer orders for dispatch.'},
+  {id:'p8',name:'In-shop client handling',tag:'Service',priority:'high',description:'Attend to walk-in clients and showcase products professionally.'},
+  {id:'p9',name:'Answer DMs & calls',tag:'Comms',priority:'med',description:'Respond to all DMs on Instagram and WhatsApp within 1 hour.'},
+];
+
+// Returns effective preset list (builtin merged with any edits)
+function getEffectiveBuiltin(){
+  return BUILTIN.map(p=>{
+    const edit=S.builtinEdits?.[p.id];
+    return edit?{...p,...edit}:p;
+  });
+}
+
+// Edit preset modal
+window.openEditPreset=function(pid){
+  const allP=[...getEffectiveBuiltin(),...(S.presets||[])];
+  const p=allP.find(x=>x.id===pid);if(!p)return;
+  document.getElementById('ep-id').value=pid;
+  document.getElementById('ep-name').value=p.name||'';
+  document.getElementById('ep-tag').value=p.tag||'';
+  document.getElementById('ep-pri').value=p.priority||'med';
+  document.getElementById('ep-dl').value=p.deadline||'';
+  document.getElementById('ep-desc').value=p.description||'';
+  document.getElementById('edit-preset-modal').style.display='flex';
+};
+window.closeEditPresetModal=function(){document.getElementById('edit-preset-modal').style.display='none';};
+window.saveEditPreset=async function(){
+  const pid=document.getElementById('ep-id').value;
+  const name=document.getElementById('ep-name').value.trim();if(!name){toast('Task name required');return;}
+  const upd={name,tag:document.getElementById('ep-tag').value.trim()||'Task',priority:document.getElementById('ep-pri').value,deadline:document.getElementById('ep-dl').value,description:document.getElementById('ep-desc').value.trim()};
+  const isBuiltin=BUILTIN.find(b=>b.id===pid);
+  if(isBuiltin){
+    if(!S.builtinEdits)S.builtinEdits={};
+    S.builtinEdits[pid]=upd;
+  } else {
+    const i=S.presets.findIndex(p=>p.id===pid);
+    if(i>=0)S.presets[i]={...S.presets[i],...upd};
+  }
+  // Also update any live tasks using this preset
+  S.tasks.filter(t=>t.presetId===pid).forEach(t=>Object.assign(t,{name:upd.name,tag:upd.tag,priority:upd.priority,deadline:upd.deadline,description:upd.description}));
+  await saveS();closeEditPresetModal();renderView();toast('✨ Preset updated!');
+};
+
+// ══ CONFIRM TASKS (Send & Confirm) ══
+window.openConfirmModal=function(){
+  if(!S.tasks.length){toast('No tasks to send');return;}
+  const ws=getWorkers();
+  let html='';
+  S.tasks.forEach(t=>{
+    const al=t.assignedTo==='both'?'Both':S.names[t.assignedTo]||t.assignedTo;
+    html+=`<div style="background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:500">${t.name}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">${t.tag} · ${t.priority||'med'} priority · Assigned: <b style="color:var(--g)">${al}</b></div>
+    </div>`;
+  });
+  document.getElementById('confirm-task-list').innerHTML=html;
+  document.getElementById('confirm-tasks-modal').style.display='flex';
+};
+window.closeConfirmModal=function(){document.getElementById('confirm-tasks-modal').style.display='none';};
+window.confirmSendTasks=async function(){
+  S.tasksConfirmed=true;
+  closeConfirmModal();
+  toast('✅ Tasks sent to workers!');
+  pushNotif('📤 Owner sent today\'s tasks to workers');
+  const taskCount=S.tasks.length;
+  const brand=S.brand?.name||'Oluxy';
+  sendPushNotif(
+    `📋 ${brand} — Tasks Ready`,
+    `${taskCount} task${taskCount!==1?'s':''} assigned for today. Open the app to get started!`,
+    'tasks-assigned'
+  );
+  // Store pending notif for each worker — single saveS at end
+  if(!S.pendingWorkerNotif)S.pendingWorkerNotif={};
+  getWorkers().forEach(w=>{
+    const myTasks=S.tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both').length;
+    S.pendingWorkerNotif[w]={title:`📋 ${brand} — Tasks Ready`,body:`${myTasks} task${myTasks!==1?'s':''} assigned for you today!`,ts:Date.now()};
+  });
+  await saveS(); // single save after all state changes
+  renderView();
+};
+
+// ══ DATE ══
+const todayKey=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+function fmtDateKey(k){if(!k)return'';const[y,m,d]=k.split('-');return new Date(+y,+m-1,+d).toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});}
+const nowTime=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+// ══ STATE ══
+let S=null,CU=null,selUser=null,ownerTab='dash',historyDay=null;
+let fbLoaded=false,fsdb=null,unsub=null,isOnline=navigator.onLine;
+let _lastUndo={},undoTimer=null,notifOpen=false,searchQ='';
+
+function getWorkers(){const w=['kaliza','kanyana'];if(S?.worker3Enabled)w.push('worker3');return w;}
+function avClass(u){return u==='owner'?'av-o':u==='kaliza'?'av-k':u==='kanyana'?'av-n':'av-x';}
+function abClass(u){return u==='kaliza'?'ab-k':u==='kanyana'?'ab-n':u==='worker3'?'ab-x':'ab-both';}
+
+function mkWorkerObj(def){const o={};getWorkers().forEach(w=>o[w]=def instanceof Function?def():def);return o;}
+function ensureTask(t){getWorkers().forEach(w=>{if(t.completedBy[w]===undefined)t.completedBy[w]=false;if(t.reportBy[w]===undefined)t.reportBy[w]='';if(t.completedAt[w]===undefined)t.completedAt[w]=null;});if(!t.comments)t.comments=[];if(!t.priority)t.priority='med';if(!t.description)t.description='';if(!t.deadline)t.deadline='';}
+
+function newState(){return{passwords:{owner:'owner123',kaliza:'kaliza123',kanyana:'kanyana123',worker3:'worker3123'},names:{owner:'Owner',kaliza:'Kaliza',kanyana:'Kanyana',worker3:'Worker 3'},tasks:[],presets:[],history:{},lastResetDate:null,ownerMadeChanges:false,nextId:100,ts:Date.now(),ver:1,notifications:[],worker3Enabled:false,brand:{name:'Oluxy',icon:'⌚',sub:'Watches · Task Manager'},lightMode:false,tasksConfirmed:true,builtinEdits:{},notifPerms:{},pendingWorkerNotif:{},pendingOwnerNotif:[]};}
+// notifPerms: { [userId]: 'granted'|'denied'|'default' } — stored so owner can see who enabled notifs// ══ SAVE/LOAD ══
+// saveS writes locally first (fast), then pushes to Firebase in background.
+// UI never waits on the network — actions feel instant.
+// Uses S.ver (integer) NOT S.ts (wall clock) for version tracking — avoids clock-skew
+// sync bugs where the freshest write gets dropped on other devices.
+let _pushTimer=null;
+function schedulePush(){
+  clearTimeout(_pushTimer);
+  _pushTimer=setTimeout(()=>{
+    if(fbLoaded&&fsdb&&isOnline){
+      pushFB().catch(e=>console.warn('FB push:',e));
+      // Tell SW to check Firestore for pending notifs right now.
+      // This fires the notification on the *other* device even if their
+      // app tab is in the background or closed.
+      _triggerSWNotifCheck();
+    } else if(fbLoaded&&!isOnline){
+      dbSet('pending',true);
+      // Register a one-shot background sync so the check fires the moment
+      // this device comes back online (even if the app is not open).
+      if(_swReg&&'sync'in _swReg){
+        _swReg.sync.register('oluxy-notif-check').catch(()=>{});
+      }
+    }
+  },400);
+}
+
+// Tell the active SW to run checkAndFirePendingNotifs() right now
+function _triggerSWNotifCheck(){
+  const ctrl=navigator.serviceWorker?.controller;
+  if(ctrl)ctrl.postMessage({type:'CHECK_NOTIFS'});
+}
+async function saveS(){
+  if(!S.ver||typeof S.ver!=='number')S.ver=0;
+  S.ver+=1;          // increment version counter — reliable across devices
+  S.ts=Date.now();   // keep ts for display purposes only
+  await dbSet('state',S); // local write — always fast
+  schedulePush();          // cloud push is non-blocking
+}
+async function loadS(){
+  const s=await dbGet('state');
+  if(s){S=s;
+    ['presets','history','notifications'].forEach(k=>{if(!S[k])S[k]=[];});
+    if(!S.lastResetDate)S.lastResetDate=null;
+    if(S.ownerMadeChanges===undefined)S.ownerMadeChanges=false;
+    if(S.worker3Enabled===undefined)S.worker3Enabled=false;
+    if(!S.brand)S.brand={name:'Oluxy',icon:'⌚',sub:'Watches · Task Manager'};
+    if(!S.passwords.worker3)S.passwords.worker3='worker3123';
+    if(!S.names.worker3)S.names.worker3='Worker 3';
+    if(S.lightMode===undefined)S.lightMode=false;
+    if(S.tasksConfirmed===undefined)S.tasksConfirmed=true;
+    if(!S.builtinEdits)S.builtinEdits={};
+    if(!S.notifPerms)S.notifPerms={};
+    if(!S.pendingWorkerNotif)S.pendingWorkerNotif={};
+    if(!S.pendingOwnerNotif)S.pendingOwnerNotif=[];
+    // Migrate: add ver counter if missing (old state used ts only)
+    if(!S.ver||typeof S.ver!=='number')S.ver=1;
+    S.tasks.forEach(ensureTask);
+  } else {S=newState();}
+}
+
+// ══ DAILY RESET ══
+async function checkAutoReset(){
+  const today=todayKey();
+  // Guard: if lastResetDate already equals today, nothing to do on ANY device
+  if(S.lastResetDate===today)return;
+  // Guard: only proceed if we're the "winning" device — check remote first to avoid double-reset
+  // If Firebase is live and remote already has today's date, just sync locally
+  if(fbLoaded&&window._fns){
+    try{
+      const{doc,getDoc,fsdb}=window._fns;
+      const snap=await getDoc(doc(fsdb,'oluxy','state'));
+      if(snap.exists()&&snap.data().lastResetDate===today){
+        // Another device already did the reset — just pull it in
+        const r=snap.data();S={...r,history:Object.keys(r.history||{}).length>0?r.history:(S?.history||{})};
+        await dbSet('state',S);return;
+      }
+    }catch(e){/* offline — proceed with local reset */}
+  }
+  // 1. Snapshot yesterday into history
+  if(S.tasks.length>0&&S.lastResetDate){
+    S.history[S.lastResetDate]={date:S.lastResetDate,tasks:JSON.parse(JSON.stringify(S.tasks))};
+    const keys=Object.keys(S.history).sort().reverse();
+    if(keys.length>60)keys.slice(60).forEach(k=>delete S.history[k]);
+  }
+  // 2. Carry tasks forward — always bring yesterday's tasks into today, cleared
+  if(S.tasks.length>0){
+    S.tasks=S.tasks.map(t=>({
+      ...t,
+      id:S.nextId++,
+      completedBy:mkWorkerObj(false),
+      reportBy:mkWorkerObj(''),
+      completedAt:mkWorkerObj(null),
+      comments:[]
+    }));
+    // Hold as unconfirmed — owner must review & resend (or it auto-confirms after grace period)
+    S.tasksConfirmed=false;
+    S.ownerMadeChanges=false;
+  }
+  S.lastResetDate=today;
+  await saveS();
+  toast('🌅 New day — yesterday\'s tasks loaded. Review & send to workers!');
+  // Notify owner device that new day started
+  if(CU==='owner'||!CU){
+    sendPushNotif(`🌅 ${S.brand?.name||'Oluxy'} — New Day`, `Yesterday's tasks are ready. Review and send to workers.`, 'new-day');
+  }
+  // Auto-confirm after 30 min grace if owner hasn't acted (so workers aren't blocked all morning)
+  setTimeout(async()=>{
+    if(!S.tasksConfirmed&&S.tasks.length>0&&S.lastResetDate===todayKey()){
+      S.tasksConfirmed=true;
+      await saveS();
+      if(CU)renderView();
+      toast('⏰ Tasks auto-confirmed after 30 min grace period');
+      sendPushNotif(`📤 ${S.brand?.name||'Oluxy'} — Tasks Active`, `Today's tasks were auto-confirmed. Workers can now see them.`, 'auto-confirm');
+    }
+  }, 30 * 60 * 1000);
+}
+function scheduleMidnight(){
+  const n=new Date();
+  const nx=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,5);
+  setTimeout(async()=>{
+    await checkAutoReset();
+    if(CU){
+      renderView();
+      // If owner is logged in, push the new-day review notification
+      if(CU==='owner'){
+        sendPushNotif(
+          `🌅 ${S.brand?.name||'Oluxy'} — New Day Started`,
+          `${S.tasks.length} task${S.tasks.length!==1?'s':''} from yesterday loaded. Review & send to workers.`,
+          'new-day'
+        );
+      }
+    }
+    scheduleMidnight();
+  },(nx-n));
+}
+async function snapshotToday(){
+  if(!S.tasks.length)return;
+  const k=todayKey();
+  S.history[k]={date:k,tasks:JSON.parse(JSON.stringify(S.tasks))};
+  await saveS();
+  // Also push history to its own Firestore document so it doesn't bloat oluxy/state
+  if(fbLoaded&&isOnline)pushHistoryFB().catch(e=>console.warn('history sync:',e));
+}
+
+// ══ PAGES ══
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ══ THEME ══
+function applyTheme(){document.body.classList.toggle('light',!!S.lightMode);document.getElementById('theme-btn').textContent=S.lightMode?'☀️':'🌙';}
+window.toggleTheme=async function(){S.lightMode=!S.lightMode;applyTheme();await saveS();if(CU)renderView();};
+
+// ══ BRAND ══
+function applyBrand(){
+  const b=S.brand||{name:'Oluxy',icon:'⌚',sub:'Watches · Task Manager'};
+  ['tb-icon','setup-icon','login-icon'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=b.icon;});
+  ['tb-name-brand','setup-name','login-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=b.name.toUpperCase();});
+  const sub=document.getElementById('login-sub');if(sub)sub.textContent=b.sub;
+  document.title=b.name+' Task Manager';
+}
+function openBrandModal(){
+  const b=S.brand||{};
+  document.getElementById('b-name').value=b.name||'';
+  document.getElementById('b-icon').value=b.icon||'';
+  document.getElementById('b-sub').value=b.sub||'';
+  document.getElementById('brand-modal').style.display='flex';
+}
+function closeBrandModal(){document.getElementById('brand-modal').style.display='none';}
+window.saveBrand=async function(){
+  S.brand={name:document.getElementById('b-name').value.trim()||'Oluxy',icon:document.getElementById('b-icon').value.trim()||'⌚',sub:document.getElementById('b-sub').value.trim()||'Watches · Task Manager'};
+  await saveS();applyBrand();closeBrandModal();toast('✨ Brand updated!');
+};
+
+// ══ FIREBASE ══
+window.skipToLogin=function(){
+  showPage('page-login');syncNames();setSyncUI('none');loadSavedCredsUI();
+  tryRestoreSession();
+  if(!CU) showPage('page-login');
+};
+window.connectFirebase=async function(){
+  const apiKey=document.getElementById('cfg-apiKey').value.trim(),projectId=document.getElementById('cfg-projectId').value.trim();
+  if(!apiKey||!projectId){showErr('cfg-err','API Key and Project ID are required.');return;}
+  const cfg={apiKey,authDomain:document.getElementById('cfg-authDomain').value.trim(),projectId,storageBucket:document.getElementById('cfg-storageBucket').value.trim(),messagingSenderId:document.getElementById('cfg-messagingSenderId').value.trim(),appId:document.getElementById('cfg-appId').value.trim()};
+  await dbSet('fbcfg',cfg);await bootFB(cfg);
+};
+
+// ── Firestore uses TWO documents to stay within 1 MB limit:
+//    oluxy/state   → everything except history (tasks, config, names, etc.)
+//    oluxy/history → day-keyed history entries (can be large)
+// ── Sync uses S.ver (integer counter) NOT wall-clock ts to avoid clock-skew
+//    race conditions where the freshest save gets silently dropped.
+
+async function bootFB(cfg){
+  try{
+    const{initializeApp,getApps,getApp}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const{getFirestore,doc,setDoc,getDoc,updateDoc,onSnapshot,serverTimestamp}=
+      await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const app=getApps().length?getApp():initializeApp(cfg);
+    fsdb=getFirestore(app);
+    window._fns={doc,setDoc,getDoc,updateDoc,onSnapshot,serverTimestamp,fsdb};
+    fbLoaded=true;
+
+    // 1. Pull remote state document
+    const snap=await getDoc(doc(fsdb,'oluxy','state'));
+    if(snap.exists()){
+      const r=snap.data();
+      // Use ver (integer) for conflict detection — not ts (wall clock)
+      const remoteVer=r.ver??0;
+      const localVer=S?.ver??0;
+      if(remoteVer>=localVer){
+        // Remote is equal or newer — use it (but keep local history if remote has none)
+        const localHistory=S?.history||{};
+        S={...r,history:Object.keys(r.history||{}).length>0?r.history:localHistory};
+        // Also fetch the separate history document
+        try{
+          const hSnap=await getDoc(doc(fsdb,'oluxy','history'));
+          if(hSnap.exists()){S.history={...S.history,...hSnap.data()};}
+        }catch(e){/* history fetch failed — keep local */}
+        await dbSet('state',S);
+      } else {
+        // Local is newer (offline edits) — push local up
+        await pushFB();
+      }
+    } else {
+      // First time — push local state to Firebase
+      await pushFB();
+    }
+
+    // 2. Start real-time listener with error recovery
+    startFBListener();
+
+    setSyncUI('live');
+    syncNames();loadSavedCredsUI();
+    tryRestoreSession();
+    if(!CU) showPage('page-login');
+  }catch(e){
+    console.error('Firebase boot error:',e);
+    showErr('cfg-err','Firebase error: '+e.message);
+    // Fall back to offline mode gracefully
+    setSyncUI('none');
+    syncNames();loadSavedCredsUI();
+    tryRestoreSession();
+    if(!CU) showPage('page-login');
+  }
+}
+
+let _listenerRetryTimer=null;
+function startFBListener(){
+  if(!window._fns)return;
+  const{doc,onSnapshot,fsdb}=window._fns;
+  if(unsub){try{unsub();}catch(e){}}
+  unsub=onSnapshot(
+    doc(fsdb,'oluxy','state'),
+    async snap=>{
+      setSyncUI('live');
+      if(!snap.exists())return;
+      const r=snap.data();
+      const remoteVer=r.ver??0;
+      const localVer=S?.ver??0;
+      // Only apply if remote version is strictly newer — prevents stomping local edits
+      if(remoteVer>localVer){
+        const prevCU=CU;
+        S={...r,history:Object.keys(r.history||{}).length>0?r.history:(S?.history||{})};
+        await dbSet('state',S);
+        if(prevCU)renderViewSafe(); // safe render preserves open cards & draft text
+      }
+    },
+    err=>{
+      console.warn('FB listener error:',err);
+      setSyncUI('off');
+      // Retry listener after 5 seconds
+      clearTimeout(_listenerRetryTimer);
+      _listenerRetryTimer=setTimeout(()=>{
+        if(fbLoaded&&isOnline)startFBListener();
+      },5000);
+    }
+  );
+}
+
+async function pushFB(){
+  if(!window._fns||!fbLoaded)return;
+  const{doc,setDoc,fsdb}=window._fns;
+  try{
+    // Split: push state without history to oluxy/state (keeps doc small)
+    const{history,...stateWithoutHistory}=S;
+    await setDoc(doc(fsdb,'oluxy','state'),JSON.parse(JSON.stringify(stateWithoutHistory)));
+    // Push history separately only when it has content
+    if(Object.keys(history||{}).length>0){
+      await setDoc(doc(fsdb,'oluxy','history'),JSON.parse(JSON.stringify(history||{})));
+    }
+  }catch(e){console.warn('FB push failed:',e);}
+}
+
+async function pushHistoryFB(){
+  if(!window._fns||!fbLoaded)return;
+  const{doc,setDoc,fsdb}=window._fns;
+  try{await setDoc(doc(fsdb,'oluxy','history'),JSON.parse(JSON.stringify(S.history||{})));}
+  catch(e){console.warn('history push failed:',e);}
+}
+
+function setSyncUI(m){const p=document.getElementById('sync-pill'),t=document.getElementById('sync-txt');if(!p)return;p.className='sync-pill '+(m==='live'?'s-live':m==='off'?'s-off':'s-none');t.textContent=m==='live'?'Live':m==='off'?'Queued':'Offline';}
+window.addEventListener('online',async()=>{
+  isOnline=true;
+  if(fbLoaded){
+    setSyncUI('live');
+    startFBListener(); // reconnect listener after coming back online
+    const p=await dbGet('pending');
+    if(p){
+      pushFB().then(()=>dbDel('pending')).catch(e=>console.warn('sync:',e));
+      toast('✓ Synced!');
+    }
+    // Check for any notifications that built up while offline
+    _triggerSWNotifCheck();
+  }
+});
+window.addEventListener('offline',()=>{isOnline=false;if(fbLoaded)setSyncUI('off');});
+
+// ══ AUTH ══
+function syncNames(){
+  if(!S)return;
+  ['kaliza','kanyana','worker3'].forEach(w=>{const el=document.getElementById('ln-'+w);if(el)el.textContent=S.names[w];});
+  const w3=document.getElementById('w3-btn');if(w3)w3.style.display=S.worker3Enabled?'flex':'none';
+}
+window.selectUser=function(u){selUser=u;document.querySelectorAll('.user-btn').forEach(b=>b.classList.toggle('active',b.dataset.u===u));document.getElementById('login-err').style.display='none';document.getElementById('pw-input').focus();};
+window.doLogin=function(){
+  if(!selUser){toast('Please select a user first');return;}
+  const pw=document.getElementById('pw-input').value;
+  if(pw===S.passwords[selUser]){
+    // Always persist session so page refresh/reopen restores it
+    localStorage.setItem('oluxy_session', selUser);
+    // Also store obfuscated credentials if remember-me checked
+    if(document.getElementById('remember-me')?.checked){
+      localStorage.setItem('oluxy_saved_user',selUser);
+      localStorage.setItem('oluxy_saved_pw',btoa(encodeURIComponent(pw)));
+    }
+    resumeSession(selUser);
+  } else {document.getElementById('login-err').style.display='block';document.getElementById('pw-input').value='';}
+};
+
+// Shared logic for both fresh login and session restore
+function resumeSession(user){
+  CU=user;
+  document.getElementById('pw-input').value='';
+  document.getElementById('login-err').style.display='none';
+  const av=document.getElementById('tb-av');av.textContent=S.names[CU][0];av.className='av '+avClass(CU);
+  document.getElementById('tb-name').textContent=S.names[CU];
+  document.getElementById('notif-btn').style.display=CU==='owner'?'flex':'none';
+  showPage('page-app');renderView();applyBrand();if(CU==='owner')updateBadge();
+  setTimeout(()=>handleLoginNotifs(CU), 800);
+}
+window.doLogout=function(){
+  // Clear session — user explicitly signed out
+  localStorage.removeItem('oluxy_session');
+  CU=null;selUser=null;ownerTab='dash';historyDay=null;searchQ='';
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.remove('active'));
+  closeNotifPanel();showPage('page-login');syncNames();loadSavedCredsUI();
+};
+
+// ══ PUSH NOTIFICATION HELPERS ══
+async function handleLoginNotifs(user){
+  if(!S.notifPerms)S.notifPerms={};
+  // Ask for permission if not yet asked
+  const perm=Notification.permission;
+  // Only save to state if the value actually changed — avoids pointless ver bumps
+  if(S.notifPerms[user]!==perm){
+    S.notifPerms[user]=perm;
+    saveS(); // non-blocking — don't await, perm tracking is best-effort
+  }
+  if(perm==='default'){
+    // Show a friendly prompt first
+    const banner=document.createElement('div');
+    banner.id='notif-ask-banner';
+    banner.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--g);border-radius:16px;padding:14px 18px;z-index:9997;display:flex;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,194,100,0.2);max-width:340px;width:calc(100% - 32px)';
+    banner.innerHTML=`<div style="font-size:22px">🔔</div><div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">Enable push notifications?</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Get alerted when tasks are assigned or completed</div></div><button onclick="enableNotifs('${user}')" style="background:var(--g);color:#000;border:none;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Enable</button><button onclick="this.closest('#notif-ask-banner').remove()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px">✕</button>`;
+    document.body.appendChild(banner);
+    setTimeout(()=>banner.remove(), 12000);
+    return;
+  }
+  // Fire any pending notifications for this user
+  await deliverPendingNotifs(user);
+}
+
+async function enableNotifs(user){
+  document.getElementById('notif-ask-banner')?.remove();
+  const granted=await requestNotifPermission();
+  if(!S.notifPerms)S.notifPerms={};
+  S.notifPerms[user]=Notification.permission;
+  await saveS();
+  if(granted){
+    toast('🔔 Notifications enabled!');
+    await deliverPendingNotifs(user);
+  } else {
+    toast('Notifications blocked — check browser settings');
+  }
+  if(CU==='owner')renderView();
+}
+window.enableNotifs=enableNotifs;
+
+async function disableNotifs(user){
+  if(!S.notifPerms)S.notifPerms={};
+  S.notifPerms[user]='denied-by-user';
+  await saveS();
+  toast('🔕 Notifications turned off');
+  renderView();
+}
+window.disableNotifs=disableNotifs;
+
+async function deliverPendingNotifs(user){
+  if(Notification.permission!=='granted')return;
+  // Worker: deliver pending task assignment notif
+  if(user!=='owner'&&S.pendingWorkerNotif?.[user]){
+    const n=S.pendingWorkerNotif[user];
+    // Only fire if it's from today (within last 24h)
+    if(Date.now()-n.ts < 24*60*60*1000){
+      await sendPushNotif(n.title, n.body, 'tasks-assigned');
+    }
+    delete S.pendingWorkerNotif[user];
+    await saveS();
+  }
+  // Owner: deliver pending task completion notifs
+  if(user==='owner'&&S.pendingOwnerNotif?.length){
+    const notifs=S.pendingOwnerNotif.filter(n=>Date.now()-n.ts < 24*60*60*1000);
+    if(notifs.length===1){
+      await sendPushNotif(notifs[0].title, notifs[0].body, 'task-done');
+    } else if(notifs.length>1){
+      await sendPushNotif(
+        `✅ ${S.brand?.name||'Oluxy'} — ${notifs.length} tasks completed`,
+        notifs.map(n=>n.body).slice(0,3).join('\n'),
+        'task-done-multi'
+      );
+    }
+    S.pendingOwnerNotif=[];
+    await saveS();
+  }
+}
+
+// Saved credentials
+function loadSavedCredsUI(){
+  const su=localStorage.getItem('oluxy_saved_user');
+  const strip=document.getElementById('saved-creds-strip');
+  const nameEl=document.getElementById('saved-creds-name');
+  if(su&&S&&strip&&nameEl){
+    nameEl.textContent=S.names[su]||su;
+    strip.style.display='block';
+  } else if(strip){strip.style.display='none';}
+}
+window.useSavedCreds=function(){
+  const su=localStorage.getItem('oluxy_saved_user');
+  const sp=localStorage.getItem('oluxy_saved_pw');
+  if(!su||!sp)return;
+  selUser=su;
+  let pw=sp;try{pw=decodeURIComponent(atob(sp));}catch(e){}// decode if obfuscated
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.toggle('active',b.dataset.u===su));
+  document.getElementById('pw-input').value=pw;
+  document.getElementById('remember-me').checked=true;
+  window.doLogin();
+};
+window.clearSavedCreds=function(){
+  localStorage.removeItem('oluxy_saved_user');
+  localStorage.removeItem('oluxy_saved_pw');
+  document.getElementById('saved-creds-strip').style.display='none';
+  toast('Saved login removed');
+};
+
+// ══ NOTIFICATIONS ══
+function pushNotif(msg){if(!S.notifications)S.notifications=[];S.notifications.unshift({msg,time:nowTime(),date:todayKey(),read:false});if(S.notifications.length>60)S.notifications=S.notifications.slice(0,60);}
+function updateBadge(){const b=document.getElementById('notif-badge');if(!b)return;const n=(S.notifications||[]).filter(x=>!x.read).length;b.textContent=n>9?'9+':n;b.style.display=n>0?'block':'none';}
+window.toggleNotifPanel=function(){notifOpen=!notifOpen;const panel=document.getElementById('notif-panel');panel.classList.toggle('open',notifOpen);renderNotifPanel();if(notifOpen){(S.notifications||[]).forEach(n=>n.read=true);saveS();updateBadge();}};
+function closeNotifPanel(){notifOpen=false;document.getElementById('notif-panel')?.classList.remove('open');}
+function renderNotifPanel(){const l=document.getElementById('notif-list');if(!l)return;const ns=S.notifications||[];l.innerHTML=ns.length?ns.map(n=>`<div class="notif-item"><div>${n.msg}</div><div class="notif-time">${n.date} · ${n.time}</div></div>`).join(''):`<div class="notif-empty">No notifications yet</div>`;}
+window.clearNotifs=async function(){S.notifications=[];await saveS();renderNotifPanel();updateBadge();};
+document.addEventListener('click',e=>{const p=document.getElementById('notif-panel');const b=document.getElementById('notif-btn');if(notifOpen&&p&&!p.contains(e.target)&&b&&!b.contains(e.target)){closeNotifPanel();}});
+
+// Safe re-render from remote: preserves expanded card IDs and any typed report text
+function renderViewSafe(){
+  if(!CU)return;
+  // Capture which cards are open and any unsaved report text
+  const openCards=new Set([...document.querySelectorAll('.tcard.open')].map(el=>el.id));
+  const draftReports={};
+  document.querySelectorAll('[id^="rep-"]').forEach(el=>{if(el.value.trim())draftReports[el.id]=el.value;});
+  renderView();
+  // Restore open cards
+  openCards.forEach(id=>{document.getElementById(id)?.classList.add('open');});
+  // Restore draft report text
+  Object.entries(draftReports).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val;});
+}
+
+// ══ RENDER ══
+function renderView(){const c=document.getElementById('content');if(!c)return;CU==='owner'?renderOwner(c):renderWorker(c);}
+window.switchTab=function(t){ownerTab=t;historyDay=null;searchQ='';renderView();};
+function priBadge(p){return p==='high'?'<span class="pri-badge-high">High</span>':p==='low'?'<span class="pri-badge-low">Low</span>':'<span class="pri-badge-med">Med</span>';}
+function dlBadge(dl,done){
+  if(!dl)return'';
+  const now=new Date(),limit=new Date(now.getFullYear(),now.getMonth(),now.getDate(),...dl.split(':').map(Number));
+  const diff=limit-now;
+  const cls=done?'dl-ok':diff<0?'dl-over':diff<3600000?'dl-warn':'dl-ok';
+  const icon=done?'✓':diff<0?'⚠️':'🕐';
+  return`<span class="dl-badge ${cls}">${icon} ${dl}</span>`;
+}
+function sortTasks(tasks){return[...tasks].sort((a,b)=>{const p={high:0,med:1,low:2};const d=(p[a.priority]||1)-(p[b.priority]||1);if(d)return d;if(a.deadline&&b.deadline)return a.deadline.localeCompare(b.deadline);if(a.deadline)return -1;if(b.deadline)return 1;return 0;});}
+
+// ══ WORKER VIEW ══
+function renderWorker(c){
+  const u=CU;S.tasks.forEach(ensureTask);
+  // Workers only see confirmed tasks
+  const visibleTasks=S.tasksConfirmed?S.tasks:[];
+  const mine=sortTasks(visibleTasks.filter(t=>t.assignedTo===u||t.assignedTo==='both'));
+  const done=mine.filter(t=>t.completedBy[u]).length;
+  const pct=mine.length?Math.round(done/mine.length*100):0;
+  const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const allDone=mine.length>0&&done===mine.length;
+  const pendingMsg=!S.tasksConfirmed&&S.tasks.length>0;
+
+  let h=`<div>
+    <div style="margin-bottom:18px"><div class="wh2">Good day, ${S.names[u]} 👋</div><div class="dbadge" style="margin-top:4px">${today}</div></div>
+    <div class="pstrip">
+      <div class="prow">
+        <div><div class="pnum">${done}</div><div class="plbl">Done</div></div>
+        <div><div class="pnum" style="color:var(--muted)">${mine.length-done}</div><div class="plbl">Left</div></div>
+        <div class="pbar-w"><div class="pbar-top">Progress <span>${pct}%</span></div><div class="ptrack"><div class="pfill" style="width:${pct}%"></div></div></div>
+      </div>
+    </div>`;
+
+  if(allDone)h+=`<div class="celeb-banner"><div style="font-size:32px;margin-bottom:6px">🎉</div><div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--g)">All done, ${S.names[u]}!</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Outstanding work today.</div></div>`;
+
+  if(pendingMsg){
+    h+=`<div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:14px;padding:16px;text-align:center;margin-bottom:8px"><div style="font-size:22px;margin-bottom:6px">⏳</div><div style="font-size:13px;color:var(--gold);font-weight:600">Tasks are being prepared</div><div style="font-size:12px;color:var(--muted);margin-top:4px">The owner is finalizing today's tasks. Check back shortly!</div></div>`;
+  } else if(!mine.length){
+    h+=`<div class="empty">No tasks assigned for today yet.</div>`;
+  } else mine.forEach(t=>{
+    const isDone=t.completedBy[u],rep=t.reportBy[u]||'',time=t.completedAt[u];
+    const cmts=t.comments||[];
+    h+=`<div class="tcard ${isDone?'done':''} ${t.priority==='high'?'pri-h':t.priority==='low'?'':'pri-m'}" id="tc-${t.id}">
+      <div class="thead">
+        <div class="tchk" onclick="toggleDone(${t.id})">${isDone?'✓':''}</div>
+        <div class="tbody" onclick="toggleOpen(${t.id})">
+          <div class="tname">${t.name}${isDone&&time?`<span class="tmeta">✓ ${time}</span>`:!isDone?`<span class="tpend">Pending</span>`:''}</div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px">
+            <span class="ttag">${t.tag}</span>${priBadge(t.priority||'med')}${t.deadline?dlBadge(t.deadline,isDone):''}
+          </div>
+        </div>
+        <button class="texpand" onclick="toggleOpen(${t.id})">▾</button>
+      </div>
+      ${t.description?`<div class="tinstr">📋 ${t.description}</div>`:''}
+      <div class="treport">
+        <div class="rlbl">📝 Report</div>
+        <textarea class="rtarea" id="rep-${t.id}" placeholder="What did you do? Any issues…">${rep}</textarea>
+        <div class="rbtns"><button class="btn-save" onclick="saveRep(${t.id})">Save & Send</button><button class="btn-close" onclick="toggleOpen(${t.id})">Close</button></div>
+        <div class="rsaved" id="rsaved-${t.id}">✓ Saved & sent</div>
+      </div>
+      <div class="comments-sec">
+        <div class="rlbl">💬 Comments (${cmts.length})</div>
+        ${cmts.map(cm=>`<div class="cmt-item"><div class="cmt-who ${cm.by==='owner'?'owner-cmt':''}">${S.names[cm.by]||cm.by}<span class="cmt-ts">${cm.time}</span></div><div>${escHtml(cm.text)}</div></div>`).join('')}
+        <div class="cmt-row"><input class="cmt-input" id="ci-${t.id}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addCmt(${t.id})"><button class="btn-cmt" onclick="addCmt(${t.id})">Send</button></div>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+  c.innerHTML=h;
+  if(allDone)triggerConfetti();
+}
+
+window.toggleOpen=function(id){document.getElementById('tc-'+id)?.classList.toggle('open');};
+window.toggleDone=async function(id){
+  const u=CU,t=S.tasks.find(x=>x.id===id);if(!t)return;
+  ensureTask(t);
+  const was=!t.completedBy[u];
+  t.completedBy[u]=was;t.completedAt[u]=was?nowTime():null;
+  if(was){
+    pushNotif(`✅ ${S.names[u]} completed "${t.name}"`);
+    showUndoBar(id,u);
+    // Push notification to owner's device
+    const brand=S.brand?.name||'Oluxy';
+    const done=S.tasks.filter(t2=>getWorkers().some(w=>t2.completedBy[w])).length;
+    const total=S.tasks.length;
+    sendPushNotif(
+      `✅ ${brand} — Task Done`,
+      `${S.names[u]} completed "${t.name}" (${done}/${total} tasks done today)`,
+      'task-done-'+id
+    );
+    // Store pending owner notif in state
+    if(!S.pendingOwnerNotif)S.pendingOwnerNotif=[];
+    S.pendingOwnerNotif.unshift({title:`✅ ${brand}`,body:`${S.names[u]} completed "${t.name}"`,ts:Date.now()});
+    if(S.pendingOwnerNotif.length>20)S.pendingOwnerNotif=S.pendingOwnerNotif.slice(0,20);
+  }
+  await saveS();renderView();
+  if(was){snapshotToday();} // non-blocking snapshot after marking done
+  toast(was?'✓ Task complete!':'↩ Task reopened');
+};
+
+let _undoData={};
+function showUndoBar(taskId,user){_undoData={taskId,user};clearTimeout(undoTimer);const b=document.getElementById('undo-bar');b.classList.add('show');undoTimer=setTimeout(()=>b.classList.remove('show'),4500);}
+window.undoComplete=async function(){const{taskId,user}=_undoData;if(!taskId)return;const t=S.tasks.find(x=>x.id===taskId);if(t){t.completedBy[user]=false;t.completedAt[user]=null;await saveS();renderView();toast('↩ Undone!');}document.getElementById('undo-bar').classList.remove('show');};
+
+window.saveRep=async function(id){
+  const u=CU,t=S.tasks.find(x=>x.id===id);if(!t)return;
+  t.reportBy[u]=document.getElementById('rep-'+id)?.value.trim()||'';
+  pushNotif(`📝 ${S.names[u]} submitted a report for "${t.name}"`);
+  await saveS();
+  snapshotToday(); // non-blocking
+  const el=document.getElementById('rsaved-'+id);if(el){el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
+  toast('Report sent to owner!');
+};
+window.addCmt=async function(id){
+  const t=S.tasks.find(x=>x.id===id),inp=document.getElementById('ci-'+id);
+  if(!t||!inp)return;const text=inp.value.trim();if(!text)return;
+  if(!t.comments)t.comments=[];
+  const newCmt={by:CU,text,time:nowTime(),date:todayKey()};
+  t.comments.push(newCmt);
+  if(CU!=='owner')pushNotif(`💬 ${S.names[CU]} commented on "${t.name}": "${text.slice(0,40)}"`);
+  inp.value='';
+  // Append only the new comment to DOM — no full re-render, no duplication
+  const card=document.getElementById('tc-'+id);
+  if(card){
+    const sec=card.querySelector('.comments-sec');
+    if(sec){
+      sec.querySelector('.rlbl').textContent=`💬 Comments (${t.comments.length})`;
+      const newEl=document.createElement('div');
+      newEl.className='cmt-item';
+      newEl.innerHTML=`<div class="cmt-who ${newCmt.by==='owner'?'owner-cmt':''}">${S.names[newCmt.by]||newCmt.by}<span class="cmt-ts">${newCmt.time}</span></div><div>${escHtml(newCmt.text)}</div>`;
+      const row=sec.querySelector('.cmt-row');
+      if(row)sec.insertBefore(newEl,row);
+    }
+  }
+  await saveS();
+  toast('Comment sent!');
+};
+
+// ══ OWNER VIEW ══
+function renderOwner(c){
+  let h=`<div><div class="tabs">
+    <button class="tab ${ownerTab==='dash'?'active':''}" onclick="switchTab('dash')">📊 Today</button>
+    <button class="tab ${ownerTab==='tasks'?'active':''}" onclick="switchTab('tasks')">📋 Tasks</button>
+    <button class="tab ${ownerTab==='history'?'active':''}" onclick="switchTab('history')">🗂 History</button>
+    <button class="tab ${ownerTab==='settings'?'active':''}" onclick="switchTab('settings')">⚙️</button>
+  </div>`;
+  if(ownerTab==='dash')h+=renderDash();
+  else if(ownerTab==='tasks')h+=renderTasks();
+  else if(ownerTab==='history')h+=renderHistory();
+  else h+=renderSettings();
+  h+=`</div>`;
+  c.innerHTML=h;updateBadge();
+}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const ws=getWorkers();S.tasks.forEach(ensureTask);
+  let totA=0,totD=0;
+  ws.forEach(w=>{const wT=S.tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');totA+=wT.length;totD+=wT.filter(t=>t.completedBy[w]).length;});
+  const ov=totA?Math.round(totD/totA*100):0;
+
+  let cards=`<div class="mcard"><div class="mval">${ov}%</div><div class="mlbl">Team</div></div>`;
+  ws.forEach(w=>{const wT=S.tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');const wD=wT.filter(t=>t.completedBy[w]).length;cards+=`<div class="mcard"><div class="mval">${wD}/${wT.length}</div><div class="mlbl">${S.names[w]}</div></div>`;});
+
+  let h=`<div class="dbadge">📅 ${today}</div>
+  <div class="ogrid" style="grid-template-columns:repeat(${ws.length+1},1fr)">${cards}</div>`;
+
+  // New-day alert — tasks loaded from yesterday, awaiting owner review
+  if(S.tasks.length>0&&!S.tasksConfirmed&&!S.ownerMadeChanges){
+    h+=`<div style="background:linear-gradient(135deg,rgba(0,194,100,0.1),rgba(0,194,100,0.05));border:1.5px solid rgba(0,194,100,0.4);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px"><div style="font-size:24px">🌅</div><div><div style="font-size:13px;font-weight:700;color:var(--g)">Review today's tasks</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${S.tasks.length} tasks from yesterday — not yet sent to workers</div></div></div>
+      <button class="btn-confirm" onclick="switchTab('tasks')">Review & Send →</button>
+    </div>`;
+  }
+
+  h+=renderWeek();
+
+  if(!S.tasks.length){h+=`<div class="empty">No tasks assigned today.<br><span style="font-size:12px;opacity:.6">Go to Tasks tab to add from presets.</span></div>`;
+  } else {
+    ws.forEach(w=>{
+      const wT=sortTasks(S.tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both'));
+      const wD=wT.filter(t=>t.completedBy[w]).length;
+      const pct=wT.length?Math.round(wD/wT.length*100):0;
+      h+=`<div class="emp-sec"><div class="sec-title">${S.names[w]} — ${wD}/${wT.length} (${pct}%)</div>`;
+      wT.forEach(t=>{
+        const done=t.completedBy[w],rep=t.reportBy[w],time=t.completedAt[w];
+        const cmts=t.comments||[];
+        h+=`<div class="rrow">
+          <div class="rrow-head">
+            <span class="rtask-name">${t.name} <span class="ttag">${t.tag}</span> ${priBadge(t.priority||'med')}</span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              ${t.deadline?dlBadge(t.deadline,done):''}
+              <span class="rst ${done?'rst-done':'rst-pend'}">${done?`✓${time?' '+time:''}`:'Pending'}</span>
+            </div>
+          </div>
+          ${rep?`<div class="rnote">"${escHtml(rep)}"</div>`:`<div class="no-rep">No report yet.</div>`}
+          ${cmts.length?`<div style="margin-top:8px">${cmts.map(cm=>`<div style="font-size:12px;color:var(--muted);background:var(--card2);border-radius:8px;padding:7px 10px;margin-top:4px"><b style="color:${cm.by==='owner'?'var(--gold)':'var(--g)'}">${S.names[cm.by]||cm.by}</b> · ${cm.time} — ${escHtml(cm.text)}</div>`).join('')}</div>`:''}
+          <div class="cmt-row" style="margin-top:8px">
+            <input class="cmt-input" id="oc-${t.id}-${w}" placeholder="Reply to ${S.names[w]}…" onkeydown="if(event.key==='Enter')ownerCmt(${t.id},'${w}')">
+            <button class="btn-cmt" onclick="ownerCmt(${t.id},'${w}')">Send</button>
+          </div>
+        </div>`;
+      });
+      h+=`</div>`;
+    });
+  }
+  return h;
+}
+
+window.ownerCmt=async function(id,w){
+  const t=S.tasks.find(x=>x.id===id),inp=document.getElementById(`oc-${id}-${w}`);
+  if(!t||!inp)return;const text=inp.value.trim();if(!text)return;
+  if(!t.comments)t.comments=[];t.comments.push({by:'owner',text,time:nowTime(),date:todayKey()});
+  await saveS();inp.value='';renderView();toast('Reply sent!');
+};
+
+// ══ WEEKLY CHART ══
+function renderWeek(){
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const lbl=['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()];
+    let pct=0;
+    if(i===0){
+      const ws=getWorkers();let ta=0,td=0;
+      ws.forEach(w=>{const wT=S.tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');ta+=wT.length;td+=wT.filter(t=>t.completedBy[w]).length;});
+      pct=ta?Math.round(td/ta*100):0;
+    } else if(S.history[k]){
+      const tasks=S.history[k].tasks||[],ws=getWorkers();let ta=0,td=0;
+      ws.forEach(w=>{const wT=tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');ta+=wT.length;td+=wT.filter(t=>t.completedBy[w]).length;});
+      pct=ta?Math.round(td/ta*100):0;
+    }
+    days.push({lbl,pct,isToday:i===0});
+  }
+  const mx=Math.max(...days.map(d=>d.pct),1);
+  let h=`<div class="week-wrap"><div class="week-lbl">📈 7-Day Team Performance</div><div class="week-bar">`;
+  days.forEach(d=>{
+    const ht=Math.max(Math.round((d.pct/mx)*56),d.pct>0?4:2);
+    h+=`<div class="wday"><div class="wday-pct" style="${d.pct===100?'color:var(--g)':''}">${d.pct?d.pct+'%':''}</div><div class="wday-fill${d.isToday?' wtoday':''}" style="height:${ht}px"></div><div class="wday-name${d.isToday?' wtoday':''}">${d.lbl}</div></div>`;
+  });
+  h+=`</div></div>`;return h;
+}
+
+// ══ TASKS TAB ══
+function renderTasks(){
+  const allP=[...getEffectiveBuiltin(),...(S.presets||[])];
+  const activeIds=new Set(S.tasks.map(t=>t.presetId).filter(Boolean));
+  const yesterday=Object.keys(S.history||{}).sort().reverse()[0];
+  const canCarry=yesterday&&!S.ownerMadeChanges&&S.tasks.length===0;
+  const q=searchQ.toLowerCase();
+  const filtered=q?allP.filter(p=>p.name.toLowerCase().includes(q)||p.tag.toLowerCase().includes(q)):allP;
+  const ws=getWorkers();
+
+  let h='';
+
+  // New-day auto-carry banner — shown when midnight rolled tasks forward and owner hasn't reviewed yet
+  const isNewDayCarry=S.tasks.length>0&&!S.tasksConfirmed&&!S.ownerMadeChanges;
+  if(isNewDayCarry){
+    h+=`<div style="background:linear-gradient(135deg,rgba(0,194,100,0.1),rgba(0,194,100,0.05));border:1.5px solid rgba(0,194,100,0.4);border-radius:18px;padding:18px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:28px">🌅</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--g)">New day — yesterday's tasks are loaded</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Review below, make any edits, then send to workers. Auto-confirms in 30 min.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-confirm" style="flex:1;min-width:120px" onclick="openConfirmModal()">✅ Send As-Is →</button>
+        <button class="btn-sm" style="background:var(--red);color:#fff;box-shadow:none;flex:1;min-width:120px" onclick="clearAllTasks()">🗑 Start Fresh</button>
+      </div>
+    </div>`;
+  }
+
+  if(canCarry)h+=`<div class="carry-banner"><div><div style="font-size:13px;font-weight:600;color:var(--g)">Use yesterday's tasks?</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${fmtDateKey(yesterday)}</div></div><button class="btn-sm" onclick="useYesterday()">↩ Use Yesterday</button></div>`;
+
+  // Send & Confirm banner
+  if(S.tasks.length>0){
+    if(!S.tasksConfirmed){
+      h+=`<div class="confirm-banner"><div class="confirm-banner-info"><div class="confirm-banner-title">📤 Tasks ready to send</div><div class="confirm-banner-sub">${S.tasks.length} task${S.tasks.length!==1?'s':''} prepared — workers can't see them yet</div></div><button class="btn-confirm" onclick="openConfirmModal()">Send & Confirm →</button></div>`;
+    } else {
+      h+=`<div style="background:rgba(0,194,100,0.06);border:1px solid rgba(0,194,100,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="font-size:12px;color:var(--g)">✅ Tasks sent to workers</div><button class="del-btn" onclick="recallTasks()" style="font-size:11px">↩ Recall & Edit</button></div>`;
+    }
+  }
+
+  h+=`<div class="add-form">
+    <div class="form-title">📌 Tasks — tap to add · tap again to remove</div>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input placeholder="Search tasks or categories…" value="${searchQ}" oninput="filterP(this.value)">
+      ${searchQ?`<button class="search-clr" onclick="filterP('')">✕</button>`:''}
+    </div>
+    <div class="preset-grid">`;
+
+  if(!filtered.length)h+=`<div class="empty" style="padding:20px">No presets match "${searchQ}"</div>`;
+  else filtered.forEach(p=>{
+    const active=activeIds.has(p.id);
+    const activeTask=active?S.tasks.find(t=>t.presetId===p.id):null;
+    const wOpts=activeTask?`<option value="both" ${activeTask.assignedTo==='both'?'selected':''}>Both</option>`+ws.map(w=>`<option value="${w}" ${activeTask.assignedTo===w?'selected':''}>${S.names[w]}</option>`).join(''):'';
+    const ac=activeTask?(activeTask.assignedTo==='both'?'ab-both':abClass(activeTask.assignedTo)):'';
+    const al=activeTask?(activeTask.assignedTo==='both'?'Both':S.names[activeTask.assignedTo]||activeTask.assignedTo):'';
+    h+=`<div class="preset-chip ${active?'preset-active':''}" onclick="togglePreset('${p.id}')">
+      <span class="preset-tag">${p.tag}</span>
+      <div style="flex:1;min-width:0">
+        <div class="preset-name">${p.name}</div>
+        ${p.description&&!active?`<div class="preset-desc">${p.description}</div>`:''}
+        ${active&&activeTask?`<div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap">
+          ${priBadge(activeTask.priority||'med')}
+          ${activeTask.deadline?`<span style="font-size:10px;color:var(--muted)">🕐 ${activeTask.deadline}</span>`:''}
+          <span class="abadge ${ac}" style="margin-left:0">${al}</span>
+        </div>`:''}
+      </div>
+      ${active?`<div style="display:flex;align-items:center;gap:4px" onclick="event.stopPropagation()">
+        <select class="f-select" style="padding:4px 6px;font-size:11px;width:auto;border-radius:8px;flex-shrink:0;min-width:64px" onchange="reassign(${activeTask?.id},this.value)">${wOpts}</select>
+        <span class="preset-check">✓</span>
+      </div>`:priBadge(p.priority||'med')}
+      <button class="preset-edit-btn" onclick="event.stopPropagation();openEditPreset('${p.id}')" title="Edit preset">✏️</button>
+    </div>`;
+  });
+
+  h+=`</div>
+    <div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:14px">
+      <div class="form-title">+ Create custom preset</div>
+      <div class="frow"><input class="f-input" id="np-name" placeholder="Task name…"><input class="f-input" id="np-tag" placeholder="Category"></div>
+      <div class="frow">
+        <select class="f-select" id="np-pri"><option value="high">🔴 High</option><option value="med" selected>🟡 Medium</option><option value="low">🟢 Low</option></select>
+        <input class="f-input" id="np-dl" type="time" placeholder="Deadline">
+      </div>
+      <input class="f-input" id="np-desc" placeholder="Instructions (optional)" style="margin-bottom:9px">
+      <button class="btn-gold" style="margin-top:0" onclick="addPreset()">Save as Preset</button>
+    </div>
+  </div>`;
+
+  // Summary bar — shows count of selected tasks with send button
+  if(S.tasks.length>0){
+    h+=`<div style="background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div style="font-size:13px;font-weight:600">${S.tasks.length} task${S.tasks.length!==1?'s':''} selected for today</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        ${S.tasksConfirmed
+          ?`<div style="font-size:12px;color:var(--g)">✅ Sent to workers</div><button class="del-btn" onclick="recallTasks()" style="font-size:11px">↩ Recall</button>`
+          :`<button class="btn-confirm" style="padding:8px 16px;font-size:12px" onclick="openConfirmModal()">📤 Send & Confirm</button>`
+        }
+        <button class="del-btn" style="color:var(--red);border-color:rgba(224,82,82,.3)" onclick="clearAllTasks()">Clear all</button>
+      </div>
+    </div>`;
+  }
+  return h;
+}
+window.filterP=function(q){searchQ=q;renderView();};
+
+// ══ HISTORY ══
+function renderHistory(){
+  const keys=Object.keys(S.history||{}).sort().reverse();
+  if(!keys.length)return`<div class="empty" style="margin-top:20px">No history yet.<br><span style="font-size:12px;opacity:.6">History is saved automatically each day.</span></div>`;
+  if(historyDay&&S.history[historyDay])return renderHistDay(historyDay);
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div class="sec-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">📅 Daily History</div><button class="export-btn" onclick="exportAll()">📥 Export CSV</button></div>`;
+  keys.forEach(k=>{
+    const tasks=S.history[k]?.tasks||[],ws=getWorkers();let ta=0,td=0;
+    ws.forEach(w=>{const wT=tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');ta+=wT.length;td+=wT.filter(t=>t.completedBy[w]).length;});
+    const pct=ta?Math.round(td/ta*100):0;
+    h+=`<div class="rrow" style="cursor:pointer" onclick="viewDay('${k}')"><div class="rrow-head"><div><div style="font-size:13px;font-weight:500">${fmtDateKey(k)}</div><div style="font-size:11px;color:var(--muted);margin-top:3px">${tasks.length} tasks · ${pct}% complete</div></div><div style="display:flex;align-items:center;gap:8px"><div class="rst ${pct===100?'rst-done':'rst-pend'}">${pct}%</div><span style="color:var(--muted)">›</span></div></div></div>`;
+  });
+  return h;
+}
+function renderHistDay(k){
+  const tasks=S.history[k]?.tasks||[],ws=getWorkers();
+  let h=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px"><button onclick="closeDay()" style="background:none;border:none;color:var(--g);font-size:13px;cursor:pointer;padding:0;display:flex;align-items:center;gap:6px">‹ Back</button><button class="export-btn" onclick="exportDay('${k}')">📥 Export Day</button></div><div class="sec-title" style="margin-bottom:12px">${fmtDateKey(k)}</div>`;
+  ws.forEach(w=>{
+    const wT=tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both');
+    const wD=wT.filter(t=>t.completedBy[w]).length;
+    const pct=wT.length?Math.round(wD/wT.length*100):0;
+    h+=`<div class="emp-sec"><div class="sec-title" style="font-size:14px">${S.names[w]} — ${wD}/${wT.length} (${pct}%)</div>`;
+    wT.forEach(t=>{const done=t.completedBy[w],rep=t.reportBy[w],time=t.completedAt[w];h+=`<div class="rrow"><div class="rrow-head"><span class="rtask-name">${t.name} <span class="ttag">${t.tag}</span> ${priBadge(t.priority||'med')}</span><span class="rst ${done?'rst-done':'rst-pend'}">${done?`✓${time?' '+time:''}`:'Missed'}</span></div>${rep?`<div class="rnote">"${escHtml(rep)}"</div>`:done?'':`<div class="no-rep">No report submitted.</div>`}</div>`;});
+    h+=`</div>`;
+  });
+  return h;
+}
+window.viewDay=function(k){historyDay=k;renderView();};
+window.closeDay=function(){historyDay=null;renderView();};
+
+// ══ EXPORT ══
+function buildCSV(tasks,dateLabel){
+  const ws=getWorkers();
+  const rows=[['Date','Task','Category','Priority','Deadline','Worker','Completed','Time','Report']];
+  ws.forEach(w=>{
+    tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both').forEach(t=>{
+      rows.push([dateLabel,`"${t.name}"`,t.tag,t.priority||'med',t.deadline||'',S.names[w],t.completedBy[w]?'Yes':'No',t.completedAt[w]||'',`"${(t.reportBy[w]||'').replace(/"/g,"'")}"`]);
+    });
+  });
+  return rows.map(r=>r.join(',')).join('\n');
+}
+window.exportDay=function(k){const csv=buildCSV(S.history[k]?.tasks||[],k);dlCSV(csv,`oluxy-${k}.csv`);};
+window.exportAll=function(){
+  const ws=getWorkers();
+  const rows=[['Date','Task','Category','Priority','Deadline','Worker','Completed','Time','Report']];
+  Object.keys(S.history||{}).sort().forEach(k=>{
+    const tasks=S.history[k]?.tasks||[];
+    ws.forEach(w=>{tasks.filter(t=>t.assignedTo===w||t.assignedTo==='both').forEach(t=>{rows.push([k,`"${t.name}"`,t.tag,t.priority||'med',t.deadline||'',S.names[w],t.completedBy[w]?'Yes':'No',t.completedAt[w]||'',`"${(t.reportBy[w]||'').replace(/"/g,"'")}"`]);});});
+  });
+  dlCSV(rows.map(r=>r.join(',')).join('\n'),'oluxy-full-history.csv');
+};
+function dlCSV(csv,fn){const b=new Blob([csv],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=fn;a.click();URL.revokeObjectURL(u);toast('📥 CSV exported!');}
+
+// ══ SETTINGS ══
+function renderSettings(){
+  const ws=getWorkers();
+  // Determine current version display
+  const verDisplay = _swActiveVersion ? `v${_swActiveVersion}` : 'Loading…';
+  const hasUpdate = !!(_swReg && _swReg.waiting);
+  return`<div>
+
+  <div class="sec-title" style="margin-bottom:14px">App Version</div>
+  <div class="scard">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:14px;font-weight:500">OLUXY Task Manager</div>
+          <span id="app-version-badge" style="background:var(--g-dim);color:var(--g);border:1px solid rgba(0,194,100,0.2);border-radius:20px;font-size:11px;font-weight:600;padding:2px 10px;letter-spacing:.5px">${verDisplay}</span>
+          ${hasUpdate?`<span style="background:rgba(232,148,58,0.12);color:var(--orange);border:1px solid rgba(232,148,58,0.3);border-radius:20px;font-size:10px;font-weight:700;padding:2px 9px;letter-spacing:.5px">UPDATE READY</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5">
+          ${hasUpdate
+            ?`🟡 A new update is ready to install`
+            :`✅ You are on the latest version`}
+        </div>
+      </div>
+      ${hasUpdate
+        ?`<button class="btn-sm" style="background:var(--orange);color:#000" onclick="applyUpdate()">⬆ Install Update</button>`
+        :`<button class="btn-sm" id="check-update-btn" onclick="checkForUpdates()">Check for Updates</button>`}
+    </div>
+    ${hasUpdate?`
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border2)">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">New version: <b style="color:var(--orange)">${_swWaitingVersion?`v${_swWaitingVersion}`:'ready'}</b></div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.6">The update has been downloaded and is ready. All devices will reload automatically after installation. Your data is safe — nothing will be lost.</div>
+    </div>`:''}
+  </div>
+
+  <div class="sec-title" style="margin-bottom:14px">Employee Names</div>
+  <div class="scard">${ws.map(w=>`<div class="srow"><div class="sinfo"><div class="av ${avClass(w)}" style="width:34px;height:34px;font-size:14px">${S.names[w][0]}</div><div><div style="font-size:14px;font-weight:500">${S.names[w]}</div><div style="font-size:11px;color:var(--muted)">Store Associate</div></div></div><div style="display:flex;gap:7px;align-items:center"><input class="sinput" id="nm-${w}" placeholder="New name…"><button class="btn-sm" onclick="chgName('${w}')">Save</button></div></div>`).join('')}</div>
+
+  <div class="sec-title" style="margin-bottom:14px">Passwords</div>
+  <div class="scard">${['owner',...ws].map(u=>`<div class="srow"><div class="sinfo"><div class="av ${avClass(u)}" style="width:34px;height:34px;font-size:14px">${S.names[u][0]}</div><div><div style="font-size:14px;font-weight:500">${S.names[u]}</div><div style="font-size:11px;color:var(--muted)">${u==='owner'?'Owner':'Associate'}</div></div></div><div style="display:flex;gap:7px;align-items:center"><input class="sinput" type="password" id="pw-${u}" placeholder="New password…"><button class="btn-sm" onclick="chgPw('${u}')">Save</button></div></div>`).join('')}</div>
+
+  <div class="sec-title" style="margin-bottom:14px">3rd Associate</div>
+  <div class="scard" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:14px">Enable 3rd Associate Slot</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Name: <b>${S.names.worker3}</b></div></div><button class="btn-sm" style="${S.worker3Enabled?'background:var(--red);color:#fff;box-shadow:none':''}" onclick="toggleW3()">${S.worker3Enabled?'Disable':'Enable'}</button></div>
+
+  <div class="sec-title" style="margin-bottom:14px">App Branding</div>
+  <div class="scard" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:14px">${S.brand?.icon||'⌚'} <b>${S.brand?.name||'Oluxy'}</b></div><div style="font-size:12px;color:var(--muted);margin-top:3px">${S.brand?.sub||'Watches · Task Manager'}</div></div><button class="btn-sm" onclick="openBrandModal()">Edit</button></div>
+
+  <div class="sec-title" style="margin-bottom:14px">Appearance</div>
+  <div class="scard" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:14px">Theme</div><div style="font-size:12px;color:var(--muted);margin-top:3px">${S.lightMode?'Light mode ☀️':'Dark mode 🌙'}</div></div><button class="btn-sm" onclick="toggleTheme();renderView()">${S.lightMode?'Switch to Dark':'Switch to Light'}</button></div>
+
+  <div class="sec-title" style="margin-bottom:14px">Firebase</div>
+  <div class="scard" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:14px">Reconnect Firebase</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Update credentials</div></div><button class="btn-sm" onclick="reconnectFB()">Update Config</button></div>
+
+  <div class="sec-title" style="margin-bottom:14px">Push Notifications</div>
+  <div class="scard">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Each device must enable notifications separately. Workers are notified when tasks are assigned. Owner is notified when a task is completed.</div>
+    ${(()=>{
+      const perm=Notification.permission;
+      const userPerm=S.notifPerms?.[CU]||perm;
+      const isEnabled=perm==='granted'&&userPerm!=='denied-by-user';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:14px">Notifications on this device</div>
+          <div style="font-size:12px;margin-top:3px;color:${isEnabled?'var(--g)':perm==='denied'?'var(--red)':'var(--muted)'}">${isEnabled?'✅ Enabled':perm==='denied'?'🚫 Blocked in browser — change in browser settings':'⭕ Not enabled'}</div>
+        </div>
+        ${perm==='denied'?'<div style="font-size:11px;color:var(--muted)">Allow in browser settings</div>':isEnabled?`<button class="btn-sm" style="background:var(--red);color:#fff;box-shadow:none" onclick="disableNotifs('${CU}')">Turn Off</button>`:`<button class="btn-sm" onclick="enableNotifs('${CU}')">Enable</button>`}
+      </div>`;
+    })()}
+    ${CU==='owner'?(()=>{
+      const ws=getWorkers();
+      const statuses=ws.map(w=>{
+        const p=S.notifPerms?.[w];
+        const label=p==='granted'?'✅':p==='denied'||p==='denied-by-user'?'🚫':'⭕';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border2)"><div class="av ${avClass(w)}" style="width:28px;height:28px;font-size:12px">${S.names[w][0]}</div><div style="flex:1;font-size:13px">${S.names[w]}</div><div style="font-size:12px;color:var(--muted)">${label} ${p==='granted'?'Enabled':p==='denied'||p==='denied-by-user'?'Blocked':'Not set'}</div></div>`;
+      }).join('');
+      return `<div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:12px"><div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Worker Status</div>${statuses}</div>`;
+    })():''}
+  </div>
+
+  <div class="sec-title" style="margin-bottom:14px">Manual Day Reset</div>
+  <div class="scard" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px"><div><div style="font-size:14px">Start a fresh new day</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Saves today's history first, then resets</div></div><button class="btn-sm" style="background:var(--red);color:#fff;box-shadow:none" onclick="resetDay()">↺ Reset Day</button></div>
+  </div>`;
+}
+
+// ══ PRESET ACTIONS ══
+window.togglePreset=async function(pid){
+  const existing=S.tasks.find(t=>t.presetId===pid);
+  if(existing){S.tasks=S.tasks.filter(t=>t.presetId!==pid);toast('Removed from today');}
+  else{
+    const allP=[...getEffectiveBuiltin(),...(S.presets||[])];const p=allP.find(x=>x.id===pid);if(!p)return;
+    const ws=getWorkers();const cb=mkWorkerObj(false),rb=mkWorkerObj(''),ca=mkWorkerObj(null);
+    S.tasks.push({id:S.nextId++,name:p.name,tag:p.tag,presetId:pid,priority:p.priority||'med',description:p.description||'',deadline:p.deadline||'',assignedTo:'both',completedBy:cb,reportBy:rb,completedAt:ca,comments:[]});
+    S.tasksConfirmed=false; // requires confirm before workers see
+    toast('Added — press Send & Confirm when ready');
+  }
+  S.ownerMadeChanges=true;await saveS();renderView();
+};
+window.recallTasks=async function(){
+  S.tasksConfirmed=false;await saveS();renderView();toast('Tasks recalled — workers can no longer see them');
+};
+window.addPreset=async function(){
+  const name=document.getElementById('np-name')?.value.trim();if(!name){toast('Enter a task name');return;}
+  const tag=document.getElementById('np-tag')?.value.trim()||'Task';
+  const priority=document.getElementById('np-pri')?.value||'med';
+  const deadline=document.getElementById('np-dl')?.value||'';
+  const description=document.getElementById('np-desc')?.value.trim()||'';
+  const pid='c'+Date.now();if(!S.presets)S.presets=[];
+  S.presets.push({id:pid,name,tag,priority,deadline,description});
+  await saveS();renderView();toast('Preset saved!');
+};
+window.delPreset=async function(pid){if(!confirm('Delete this preset?'))return;S.presets=(S.presets||[]).filter(p=>p.id!==pid);S.tasks=S.tasks.filter(t=>t.presetId!==pid);await saveS();renderView();toast('Preset deleted');};
+window.useYesterday=async function(){
+  const yk=Object.keys(S.history||{}).sort().reverse()[0];if(!yk||!S.history[yk])return;
+  S.tasks=S.history[yk].tasks.map(t=>({...t,id:S.nextId++,completedBy:mkWorkerObj(false),reportBy:mkWorkerObj(''),completedAt:mkWorkerObj(null),comments:[]}));
+  S.tasksConfirmed=false; // owner must review & confirm before workers see them
+  S.ownerMadeChanges=true;await saveS();renderView();toast("Yesterday's tasks loaded — review & send when ready!");
+};
+
+// ══ TASK ACTIONS ══
+window.delTask=async function(id){if(!confirm('Remove task from today?'))return;S.tasks=S.tasks.filter(t=>t.id!==id);S.ownerMadeChanges=true;await saveS();renderView();toast('Task removed');};
+window.clearAllTasks=async function(){if(!confirm('Remove all tasks and start fresh today?'))return;S.tasks=[];S.tasksConfirmed=false;S.ownerMadeChanges=false;await saveS();renderView();toast('🗑 Cleared — add tasks from presets below');};
+window.reassign=async function(id,val){const t=S.tasks.find(x=>x.id===id);if(t){t.assignedTo=val;S.ownerMadeChanges=true;await saveS();renderView();toast('Reassigned!');}};
+window.chgName=async function(w){const v=document.getElementById('nm-'+w)?.value.trim();if(!v){toast('Enter a name');return;}S.names[w]=v[0].toUpperCase()+v.slice(1);await saveS();renderView();syncNames();toast('Name updated!');};
+window.chgPw=async function(u){const v=document.getElementById('pw-'+u)?.value.trim();if(!v){toast('Enter a password');return;}S.passwords[u]=v;await saveS();document.getElementById('pw-'+u).value='';toast('Password updated for '+S.names[u]);};
+window.toggleW3=async function(){S.worker3Enabled=!S.worker3Enabled;await saveS();renderView();syncNames();toast(S.worker3Enabled?'3rd associate enabled!':'3rd associate disabled');};
+window.resetDay=async function(){
+  if(!confirm("Save today's history and reset all completions?"))return;
+  await snapshotToday();const ws=getWorkers();
+  S.tasks.forEach(t=>{t.completedBy=mkWorkerObj(false);t.reportBy=mkWorkerObj('');t.completedAt=mkWorkerObj(null);t.comments=[];});
+  S.tasksConfirmed=false; // owner must re-confirm after reset
+  S.lastResetDate=todayKey();S.ownerMadeChanges=true;await saveS();renderView();toast('✨ Day reset — review & send tasks to workers!');
+};
+window.reconnectFB=async function(){await dbDel('fbcfg');fbLoaded=false;fsdb=null;if(unsub){try{unsub();}catch(e){}unsub=null;}CU=null;showPage('page-setup');};
+
+// ══ CONFETTI ══
+function triggerConfetti(){
+  const cv=document.getElementById('confetti-canvas');cv.style.display='block';
+  const ctx=cv.getContext('2d');cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const cols=['#00C264','#00E874','#C9A84C','#7A9BC9','#E8943A','#fff'];
+  const ps=Array.from({length:90},()=>({x:Math.random()*cv.width,y:Math.random()*-cv.height,w:Math.random()*10+4,h:Math.random()*6+3,c:cols[Math.floor(Math.random()*cols.length)],vx:(Math.random()-.5)*3,vy:Math.random()*4+2,r:Math.random()*Math.PI*2,vr:(Math.random()-.5)*.2}));
+  let f=0;
+  function draw(){ctx.clearRect(0,0,cv.width,cv.height);ps.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.vy+=.06;});f++;if(f<200)requestAnimationFrame(draw);else{ctx.clearRect(0,0,cv.width,cv.height);cv.style.display='none';}}
+  draw();
+}
+
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');}
+
+// ══ SHOW ERR ══
+let _tt;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2600);}
+
+// ══ BOOT ══
+async function boot(){
+  await openDB();await loadS();applyTheme();applyBrand();
+
+  const fbcfg=await dbGet('fbcfg');
+  if(fbcfg){
+    await bootFB(fbcfg); // pull freshest state from cloud first
+  } else {
+    showPage('page-login');
+    syncNames();
+    loadSavedCredsUI();
+    tryRestoreSession();
+  }
+
+  // Auto-reset AFTER we have the most current state (local or cloud)
+  await checkAutoReset();
+  scheduleMidnight();
+}
+
+// Attempt to restore a saved session without asking for password again
+function tryRestoreSession(){
+  const saved=localStorage.getItem('oluxy_session');
+  if(!saved||!S)return;
+  // Make sure the user still exists in state (passwords haven't changed etc.)
+  if(!S.passwords[saved])return;
+  // Restore silently
+  resumeSession(saved);
+}
+
+boot();
+</script>
+</body>
+</html>
